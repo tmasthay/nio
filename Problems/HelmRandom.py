@@ -6,7 +6,9 @@ from torch.utils.data import Dataset
 
 
 class MyDataset(Dataset):
-    def __init__(self, norm, inputs_bool, device, which, mod, which_data, noise=0):
+    def __init__(
+        self, norm, inputs_bool, device, which, mod, which_data, noise=0
+    ):
         self.mod = mod
         self.noise = noise
         if which_data == "sin":
@@ -26,15 +28,22 @@ class MyDataset(Dataset):
                 self.which = which
 
             self.reader = h5py.File(self.file_data, 'r')
-            self.mean_inp = torch.from_numpy(self.reader['mean_inp_fun'][:, :]).type(torch.float32)
-            self.mean_out = torch.from_numpy(self.reader['mean_out_fun'][:, :]).type(torch.float32)
-            self.std_inp = torch.from_numpy(self.reader['std_inp_fun'][:, :]).type(torch.float32)
-            self.std_out = torch.from_numpy(self.reader['std_out_fun'][:, :]).type(torch.float32)
+            self.mean_inp = torch.from_numpy(
+                self.reader['mean_inp_fun'][:, :]
+            ).type(torch.float32)
+            self.mean_out = torch.from_numpy(
+                self.reader['mean_out_fun'][:, :]
+            ).type(torch.float32)
+            self.std_inp = torch.from_numpy(
+                self.reader['std_inp_fun'][:, :]
+            ).type(torch.float32)
+            self.std_out = torch.from_numpy(
+                self.reader['std_out_fun'][:, :]
+            ).type(torch.float32)
             self.min_data = torch.tensor(self.reader['min_inp'][()])
             self.max_data = torch.tensor(self.reader['max_inp'][()])
             self.min_model = torch.tensor(self.reader['min_out'][()])
             self.max_model = torch.tensor(self.reader['max_out'][()])
-
 
         else:
             self.file_data = "data/HelmholtzTomography.h5"
@@ -53,10 +62,18 @@ class MyDataset(Dataset):
                 self.which = which
 
             self.reader = h5py.File(self.file_data, 'r')
-            self.mean_inp = torch.from_numpy(self.reader['mean_inp_fun'][:, :]).type(torch.float32)
-            self.mean_out = torch.from_numpy(self.reader['mean_out_fun'][:, :]).type(torch.float32)
-            self.std_inp = torch.from_numpy(self.reader['std_inp_fun'][:, :]).type(torch.float32)
-            self.std_out = torch.from_numpy(self.reader['std_out_fun'][:, :]).type(torch.float32)
+            self.mean_inp = torch.from_numpy(
+                self.reader['mean_inp_fun'][:, :]
+            ).type(torch.float32)
+            self.mean_out = torch.from_numpy(
+                self.reader['mean_out_fun'][:, :]
+            ).type(torch.float32)
+            self.std_inp = torch.from_numpy(
+                self.reader['std_inp_fun'][:, :]
+            ).type(torch.float32)
+            self.std_out = torch.from_numpy(
+                self.reader['std_out_fun'][:, :]
+            ).type(torch.float32)
             self.min_data = torch.tensor(-100)
             self.max_data = torch.tensor(100)
             self.min_model = torch.tensor(1)
@@ -78,14 +95,20 @@ class MyDataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        inputs = torch.from_numpy(self.reader[self.which]['sample_' + str(index + self.start)]["input"][:]).type(torch.float32)
+        inputs = torch.from_numpy(
+            self.reader[self.which]['sample_' + str(index + self.start)][
+                "input"
+            ][:]
+        ).type(torch.float32)
         u_interp = torch.zeros_like(inputs)
         idx = np.arange(inputs.shape[0])
         idx_rnd = np.sort(np.random.choice(idx, 200, replace=False))
         for i in range(inputs.shape[1]):
             u_i = inputs[idx_rnd, i]
 
-            interpolant = scipy.interpolate.interp1d(idx_rnd, u_i, kind="cubic", fill_value="extrapolate")
+            interpolant = scipy.interpolate.interp1d(
+                idx_rnd, u_i, kind="cubic", fill_value="extrapolate"
+            )
 
             u_ = interpolant(idx)
 
@@ -93,7 +116,11 @@ class MyDataset(Dataset):
 
         inputs = u_interp
 
-        labels = torch.from_numpy(self.reader[self.which]['sample_' + str(index + self.start)]["output"][:]).type(torch.float32)
+        labels = torch.from_numpy(
+            self.reader[self.which]['sample_' + str(index + self.start)][
+                "output"
+            ][:]
+        ).type(torch.float32)
 
         inputs = inputs * (1 + self.noise * torch.randn_like(inputs))
         if self.norm == "norm":
@@ -101,13 +128,29 @@ class MyDataset(Dataset):
             labels = self.normalize(labels, self.mean_out, self.std_out)
         elif self.norm == "norm-inp":
             inputs = self.normalize(inputs, self.mean_inp, self.std_inp)
-            labels = 2 * (labels - self.min_model) / (self.max_model - self.min_model) - 1.
+            labels = (
+                2
+                * (labels - self.min_model)
+                / (self.max_model - self.min_model)
+                - 1.0
+            )
         elif self.norm == "norm-out":
-            inputs = 2 * (inputs - self.min_data) / (self.max_data - self.min_data) - 1.
+            inputs = (
+                2 * (inputs - self.min_data) / (self.max_data - self.min_data)
+                - 1.0
+            )
             labels = self.normalize(labels, self.mean_out, self.std_out)
         elif self.norm == "minmax":
-            inputs = 2 * (inputs - self.min_data) / (self.max_data - self.min_data) - 1.
-            labels = 2 * (labels - self.min_model) / (self.max_model - self.min_model) - 1.
+            inputs = (
+                2 * (inputs - self.min_data) / (self.max_data - self.min_data)
+                - 1.0
+            )
+            labels = (
+                2
+                * (labels - self.min_model)
+                / (self.max_model - self.min_model)
+                - 1.0
+            )
         elif self.norm == "none":
             inputs = inputs
             labels = labels
@@ -126,11 +169,15 @@ class MyDataset(Dataset):
 
     def denormalize(self, tensor):
         if self.norm == "norm" or self.norm == "norm-out":
-            return tensor * (self.std_out + 1e-16).to(self.device) + self.mean_out.to(self.device)
+            return tensor * (self.std_out + 1e-16).to(
+                self.device
+            ) + self.mean_out.to(self.device)
         elif self.norm == "none":
             return tensor
         else:
-            return (self.max_model - self.min_model) * (tensor + torch.tensor(1., device=self.device)) / 2 + self.min_model.to(self.device)
+            return (self.max_model - self.min_model) * (
+                tensor + torch.tensor(1.0, device=self.device)
+            ) / 2 + self.min_model.to(self.device)
 
     def get_grid(self):
         grid = torch.from_numpy(self.reader['grid'][:, :]).type(torch.float32)

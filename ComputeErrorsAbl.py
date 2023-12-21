@@ -59,45 +59,117 @@ if which == "sine":
     mmax = 20
     path1 = main_folder + "/Best_nio_new_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
     model1 = torch.load(path1 + "/model.pkl", map_location=torch.device(device))
     model1 = model1.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device="cpu", which="testing", mod="nio_new", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
 
 if which == "eit":
     mmax = 32
     path1 = main_folder + "/Best_nio_new_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
     model1 = torch.load(path1 + "/model.pkl", map_location=torch.device(device))
     model1 = model1.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device="cpu", which="testing", mod="nio_new", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
 
 if which == "helm":
     mmax = 20
     path1 = main_folder + "/Best_nio_new_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
-    model1 = torch.load(path1 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+    model1 = torch.load(
+        path1 + "/model.pkl", map_location=torch.device('cpu')
+    ).cpu()
     model1 = model1.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device=device, which="testing", mod="nio_new", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
 
 if which == "rad":
     mmax = 32
     path1 = main_folder + "/Best_nio_new_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
-    model1 = torch.load(path1 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+    model1 = torch.load(
+        path1 + "/model.pkl", map_location=torch.device('cpu')
+    ).cpu()
     model1 = model1.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device=device, which="testing", mod="nio_new", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
 
 print("########################################################")
 print("NIO params")
@@ -107,7 +179,9 @@ model1 = model1.to(device)
 
 model1.device = "cpu"
 
-testing_set = DataLoader(test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
+testing_set = DataLoader(
+    test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
 grid = test_dataset.get_grid().squeeze(0)
 
 # %%
@@ -117,8 +191,8 @@ grid = test_dataset.get_grid().squeeze(0)
 errs_vec = np.zeros((n, 3))
 
 running_relative_test_mse = 0.0
-running_relative_test_mse_2 = 0.
-running_relative_test_mse_3 = 0.
+running_relative_test_mse_2 = 0.0
+running_relative_test_mse_3 = 0.0
 min_model = test_dataset.min_model
 max_model = test_dataset.max_model
 
@@ -157,31 +231,69 @@ with torch.no_grad():
                 my_loss = torch.nn.L1Loss()
             else:
                 raise ValueError("Choose p = 1 or p=2")
-            loss_test = my_loss(pred_test_1, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test = my_loss(pred_test_1, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test = loss_test.item() ** (1 / p) * 100
 
             if p == 1:
-                running_relative_test_mse = running_relative_test_mse * step / (step + 1) + err_test / (step + 1)
+                running_relative_test_mse = running_relative_test_mse * step / (
+                    step + 1
+                ) + err_test / (step + 1)
 
             errs_vec[step, p - 1] = err_test
 
         if step % 1 == 0:
-            print("Batch: ", step, running_relative_test_mse, running_relative_test_mse_2, running_relative_test_mse_3)
+            print(
+                "Batch: ",
+                step,
+                running_relative_test_mse,
+                running_relative_test_mse_2,
+                running_relative_test_mse_3,
+            )
         if step >= n - 1:
             break
 print("Median L1 NIO:", np.median(errs_vec[:, 0]))
 print("Median L2 NIO:", np.median(errs_vec[:, 1]))
 
 save_path = main_folder
-print("save in ", save_path + '/sum_errors_abl_' + str(noise) + '_' + str(m) + "_" + str(which) + '.txt')
-with open(save_path + '/sum_errors_abl_' + str(noise) + '_' + str(m) + "_" + str(which) + '.txt', 'w') as file:
+print(
+    "save in ",
+    save_path
+    + '/sum_errors_abl_'
+    + str(noise)
+    + '_'
+    + str(m)
+    + "_"
+    + str(which)
+    + '.txt',
+)
+with open(
+    save_path
+    + '/sum_errors_abl_'
+    + str(noise)
+    + '_'
+    + str(m)
+    + "_"
+    + str(which)
+    + '.txt',
+    'w',
+) as file:
     file.write("Median L1 NIO:" + str(np.median(errs_vec[:, 0])) + "\n")
-    file.write("25 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.25)) + "\n")
-    file.write("75 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.75)) + "\n")
+    file.write(
+        "25 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.25)) + "\n"
+    )
+    file.write(
+        "75 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.75)) + "\n"
+    )
     file.write("Std L1 NIO:" + str(np.std(errs_vec[:, 0])) + "\n")
     file.write("Mean L1 NIO:" + str(np.mean(errs_vec[:, 0])) + "\n")
     file.write("Median L2 NIO:" + str(np.median(errs_vec[:, 1])) + "\n")
-    file.write("25 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.25)) + "\n")
-    file.write("75 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.75)) + "\n")
+    file.write(
+        "25 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.25)) + "\n"
+    )
+    file.write(
+        "75 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.75)) + "\n"
+    )
     file.write("Std L2 NIO:" + str(np.std(errs_vec[:, 1])) + "\n")
     file.write("Mean L2 NIO:" + str(np.mean(errs_vec[:, 1])) + "\n")

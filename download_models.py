@@ -1,7 +1,9 @@
 import os
 
-print("This script will download all files required for benchmark problems."
-      " You must have 'wget' installed for the downloads to work.")
+print(
+    "This script will download all files required for benchmark problems."
+    " You must have 'wget' installed for the downloads to work."
+)
 
 folder_name = "./"
 

@@ -36,8 +36,13 @@ class SpectralConv1d(nn.Module):
         self.out_channels = out_channels
         self.modes1 = modes1  # Number of Fourier modes to multiply, at most floor(N/2) + 1
 
-        self.scale = (1 / (in_channels * out_channels))
-        self.weights1 = nn.Parameter(self.scale * torch.rand(in_channels, out_channels, self.modes1, dtype=torch.cfloat))
+        self.scale = 1 / (in_channels * out_channels)
+        self.weights1 = nn.Parameter(
+            self.scale
+            * torch.rand(
+                in_channels, out_channels, self.modes1, dtype=torch.cfloat
+            )
+        )
 
     # Complex multiplication
     def compl_mul1d(self, input, weights):
@@ -51,8 +56,16 @@ class SpectralConv1d(nn.Module):
         x_ft[:, :, 0] = 0.5 * x_ft[:, :, 0]
 
         # Multiply relevant Fourier modes
-        out_ft = torch.zeros(batchsize, self.out_channels, x.size(-1) // 2 + 1, device=x.device, dtype=torch.cfloat)
-        out_ft[:, :, :self.modes1] = self.compl_mul1d(x_ft[:, :, :self.modes1], self.weights1)
+        out_ft = torch.zeros(
+            batchsize,
+            self.out_channels,
+            x.size(-1) // 2 + 1,
+            device=x.device,
+            dtype=torch.cfloat,
+        )
+        out_ft[:, :, : self.modes1] = self.compl_mul1d(
+            x_ft[:, :, : self.modes1], self.weights1
+        )
 
         # Return to physical space
         x = torch.fft.irfft(out_ft, n=x.size(-1))
@@ -60,7 +73,9 @@ class SpectralConv1d(nn.Module):
 
 
 class FNO1d(nn.Module):
-    def __init__(self, fno_architecture, device="cpu", nfun=1, padding_frac=1 / 4):
+    def __init__(
+        self, fno_architecture, device="cpu", nfun=1, padding_frac=1 / 4
+    ):
         super(FNO1d, self).__init__()
 
         """
@@ -85,9 +100,12 @@ class FNO1d(nn.Module):
         self.padding_frac = padding_frac
         self.fc0 = nn.Linear(nfun + 1, self.width)
         self.conv_list = nn.ModuleList(
-            [nn.Conv1d(self.width, self.width, 1) for _ in range(self.n_layers)])
-        self.spectral_list = nn.ModuleList(
-            [SpectralConv1d(self.width, self.width, self.modes) for _ in range(self.n_layers)])
+            [nn.Conv1d(self.width, self.width, 1) for _ in range(self.n_layers)]
+        )
+        self.spectral_list = nn.ModuleList([
+            SpectralConv1d(self.width, self.width, self.modes)
+            for _ in range(self.n_layers)
+        ])
 
         self.fc1 = nn.Linear(self.width, 128)
         self.fc2 = nn.Linear(128, 1)
@@ -124,7 +142,10 @@ class FNO1d(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams
 
@@ -154,9 +175,12 @@ class FNO1d_WOR(nn.Module):
         torch.manual_seed(self.retrain_fno)
         self.padding_frac = padding_frac
         self.conv_list = nn.ModuleList(
-            [nn.Conv1d(self.width, self.width, 1) for _ in range(self.n_layers)])
-        self.spectral_list = nn.ModuleList(
-            [SpectralConv1d(self.width, self.width, self.modes) for _ in range(self.n_layers)])
+            [nn.Conv1d(self.width, self.width, 1) for _ in range(self.n_layers)]
+        )
+        self.spectral_list = nn.ModuleList([
+            SpectralConv1d(self.width, self.width, self.modes)
+            for _ in range(self.n_layers)
+        ])
 
         self.fc1 = nn.Linear(self.width, 128)
         self.fc2 = nn.Linear(128, 1)
@@ -192,7 +216,10 @@ class FNO1d_WOR(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams
 
@@ -213,9 +240,27 @@ class SpectralConv2d(nn.Module):
         self.modes1 = modes1  # Number of Fourier modes to multiply, at most floor(N/2) + 1
         self.modes2 = modes2
 
-        self.scale = (1 / (in_channels * out_channels))
-        self.weights1 = nn.Parameter(self.scale * torch.rand(in_channels, out_channels, self.modes1, self.modes2, dtype=torch.cfloat))
-        self.weights2 = nn.Parameter(self.scale * torch.rand(in_channels, out_channels, self.modes1, self.modes2, dtype=torch.cfloat))
+        self.scale = 1 / (in_channels * out_channels)
+        self.weights1 = nn.Parameter(
+            self.scale
+            * torch.rand(
+                in_channels,
+                out_channels,
+                self.modes1,
+                self.modes2,
+                dtype=torch.cfloat,
+            )
+        )
+        self.weights2 = nn.Parameter(
+            self.scale
+            * torch.rand(
+                in_channels,
+                out_channels,
+                self.modes1,
+                self.modes2,
+                dtype=torch.cfloat,
+            )
+        )
 
     # Complex multiplication
     def compl_mul2d(self, input, weights):
@@ -228,11 +273,20 @@ class SpectralConv2d(nn.Module):
         x_ft = torch.fft.rfft2(x)
 
         # Multiply relevant Fourier modes
-        out_ft = torch.zeros(batchsize, self.out_channels, x.size(-2), x.size(-1) // 2 + 1, dtype=torch.cfloat, device=x.device)
-        out_ft[:, :, :self.modes1, :self.modes2] = \
-            self.compl_mul2d(x_ft[:, :, :self.modes1, :self.modes2], self.weights1)
-        out_ft[:, :, -self.modes1:, :self.modes2] = \
-            self.compl_mul2d(x_ft[:, :, -self.modes1:, :self.modes2], self.weights2)
+        out_ft = torch.zeros(
+            batchsize,
+            self.out_channels,
+            x.size(-2),
+            x.size(-1) // 2 + 1,
+            dtype=torch.cfloat,
+            device=x.device,
+        )
+        out_ft[:, :, : self.modes1, : self.modes2] = self.compl_mul2d(
+            x_ft[:, :, : self.modes1, : self.modes2], self.weights1
+        )
+        out_ft[:, :, -self.modes1 :, : self.modes2] = self.compl_mul2d(
+            x_ft[:, :, -self.modes1 :, : self.modes2], self.weights2
+        )
 
         # Return to physical space
         x = torch.fft.irfft2(out_ft, s=(x.size(-2), x.size(-1)))
@@ -266,11 +320,16 @@ class FNO2d(nn.Module):
         torch.manual_seed(self.retrain_fno)
         # self.padding = 9 # pad the domain if input is non-periodic
         self.padding_frac = padding_frac
-        self.fc0 = nn.Linear(3, self.width)  # input channel is 3: (a(x, y), x, y)
+        self.fc0 = nn.Linear(
+            3, self.width
+        )  # input channel is 3: (a(x, y), x, y)
         self.conv_list = nn.ModuleList(
-            [nn.Conv2d(self.width, self.width, 1) for _ in range(self.n_layers)])
-        self.spectral_list = nn.ModuleList(
-            [SpectralConv2d(self.width, self.width, self.modes1, self.modes2) for _ in range(self.n_layers)])
+            [nn.Conv2d(self.width, self.width, 1) for _ in range(self.n_layers)]
+        )
+        self.spectral_list = nn.ModuleList([
+            SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+            for _ in range(self.n_layers)
+        ])
 
         self.fc1 = nn.Linear(self.width, 128)
         self.fc2 = nn.Linear(128, 1)
@@ -309,7 +368,10 @@ class FNO2d(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams
 
@@ -341,9 +403,12 @@ class FNO_WOR(nn.Module):
         torch.manual_seed(self.retrain_fno)
         self.padding_frac = padding_frac
         self.conv_list = nn.ModuleList(
-            [nn.Conv2d(self.width, self.width, 1) for _ in range(self.n_layers)])
-        self.spectral_list = nn.ModuleList(
-            [SpectralConv2d(self.width, self.width, self.modes1, self.modes2) for _ in range(self.n_layers)])
+            [nn.Conv2d(self.width, self.width, 1) for _ in range(self.n_layers)]
+        )
+        self.spectral_list = nn.ModuleList([
+            SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+            for _ in range(self.n_layers)
+        ])
 
         self.fc1 = nn.Linear(self.width, 128)
         self.fc2 = nn.Linear(128, 1)
@@ -382,6 +447,9 @@ class FNO_WOR(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams

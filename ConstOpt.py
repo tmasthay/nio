@@ -18,7 +18,13 @@ if torch.cuda.is_available():
 else:
     device = "cpu"
 
-data = torch.tensor(np.load("data/Opt/input_boundary30.npy")).to(device).squeeze(1).reshape(20, 272).permute(1, 0)
+data = (
+    torch.tensor(np.load("data/Opt/input_boundary30.npy"))
+    .to(device)
+    .squeeze(1)
+    .reshape(20, 272)
+    .permute(1, 0)
+)
 exact_conduct = torch.tensor(np.load("data/Opt/exact30.npy"))
 
 network_architecture = json.loads(sys.argv[3].replace("\'", "\""))
@@ -26,13 +32,15 @@ print(network_architecture)
 
 kappa = KappaOpt(network_architecture)
 
-optimizer = torch.optim.LBFGS(kappa.parameters(),
-                              lr=float(network_architecture["lr"]),
-                              max_iter=50000,
-                              max_eval=50000,
-                              history_size=150,
-                              line_search_fn="strong_wolfe",
-                              tolerance_change=1.0 * np.finfo(float).eps)
+optimizer = torch.optim.LBFGS(
+    kappa.parameters(),
+    lr=float(network_architecture["lr"]),
+    max_iter=50000,
+    max_eval=50000,
+    history_size=150,
+    line_search_fn="strong_wolfe",
+    tolerance_change=1.0 * np.finfo(float).eps,
+)
 
 running_loss = list()
 
@@ -54,7 +62,9 @@ def closure():
     sim_data, out = solve_helm(kappa, L)
     # Item 1. below
     loss = torch.mean(abs(sim_data - data) ** p) / torch.mean(abs(data) ** p)
-    err_cond = (torch.mean((exact_conduct - out) ** 2) / torch.mean(exact_conduct ** 2)) ** 0.5
+    err_cond = (
+        torch.mean((exact_conduct - out) ** 2) / torch.mean(exact_conduct**2)
+    ) ** 0.5
 
     # Item 2. below
     loss.backward()

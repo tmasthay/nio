@@ -2,30 +2,41 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from Baselines import EncoderInversionNet, EncoderHelm, EncoderRad, EncoderHelm2, EncoderInversionNet2, EncoderRad2
-from DeepONetModules import FeedForwardNN, \
-    FourierFeatures, DeepOnetNoBiasOrg
+from Baselines import (
+    EncoderInversionNet,
+    EncoderHelm,
+    EncoderRad,
+    EncoderHelm2,
+    EncoderInversionNet2,
+    EncoderRad2,
+)
+from DeepONetModules import FeedForwardNN, FourierFeatures, DeepOnetNoBiasOrg
 from FNOModules import FNO2d, FNO1d, FNO_WOR, FNO1d_WOR
 
 
 ################################################################
 
+
 class SNOHelmConv(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+    ):
         super(SNOHelmConv, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
 
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
 
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
@@ -38,16 +49,18 @@ class SNOHelmConv(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
-        dim = (grid.shape[2])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
+        dim = grid.shape[2]
         grid_deeponet = grid.reshape(-1, dim)
         x = self.deeponet(x, grid_deeponet)
         x = x.reshape(-1, nx, ny, 1)
 
         if self.fno_layers != 0:
             grid = grid.unsqueeze(0)
-            grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3])
+            grid = grid.expand(
+                x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+            )
             x = torch.cat((x, grid), dim=-1)
             h = self.fno(x)
         else:
@@ -80,21 +93,25 @@ class SNOHelmConv(nn.Module):
 
 
 class SNOConvRad(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+    ):
         super(SNOConvRad, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
 
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderRad(output_dimensions)
@@ -106,7 +123,7 @@ class SNOConvRad(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-        nx = (grid.shape[0])
+        nx = grid.shape[0]
         dim = 1
         grid_deeponet = grid.reshape(nx, dim)
         x = self.deeponet(x, grid_deeponet)
@@ -146,21 +163,25 @@ class SNOConvRad(nn.Module):
 
 
 class SNOConvEIT(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+    ):
         super(SNOConvEIT, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
 
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderRad(output_dimensions)
@@ -172,16 +193,18 @@ class SNOConvEIT(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
-        dim = (grid.shape[2])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
+        dim = grid.shape[2]
         grid_deeponet = grid.reshape(-1, dim)
         x = self.deeponet(x, grid_deeponet)
         x = x.reshape(-1, nx, ny, 1)
 
         if self.fno_layers != 0:
             grid = grid.unsqueeze(0)
-            grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3])
+            grid = grid.expand(
+                x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+            )
             x = torch.cat((x, grid), dim=-1)
             h = self.fno(x)
         else:
@@ -214,26 +237,36 @@ class SNOConvEIT(nn.Module):
 
 
 class SNOWaveConv2(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 b_scale,
-                 mapping_size):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        b_scale,
+        mapping_size,
+    ):
         super(SNOWaveConv2, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
         if b_scale != 0.0:
-            self.trunk = FeedForwardNN(2 * mapping_size, output_dimensions, network_properties_trunk)
-            self.fourier_features_transform = FourierFeatures(b_scale, mapping_size, device)
+            self.trunk = FeedForwardNN(
+                2 * mapping_size, output_dimensions, network_properties_trunk
+            )
+            self.fourier_features_transform = FourierFeatures(
+                b_scale, mapping_size, device
+            )
         else:
-            self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+            self.trunk = FeedForwardNN(
+                input_dimensions_trunk,
+                output_dimensions,
+                network_properties_trunk,
+            )
 
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
@@ -247,9 +280,9 @@ class SNOWaveConv2(nn.Module):
         self.b_scale = b_scale
 
     def forward(self, x, grid):
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
-        dim = (grid.shape[2])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
+        dim = grid.shape[2]
         if self.b_scale != 0.0:
             grid_deeponet = self.fourier_features_transform(grid)
         else:
@@ -260,7 +293,9 @@ class SNOWaveConv2(nn.Module):
 
         if self.fno_layers != 0:
             grid = grid.unsqueeze(0)
-            grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3])
+            grid = grid.expand(
+                x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+            )
             x = torch.cat((x, grid), dim=-1)
             h = self.fno(x)
         else:
@@ -295,24 +330,29 @@ class SNOWaveConv2(nn.Module):
 
 ################################################################
 
+
 class NIOHelmPermInv(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIOHelmPermInv, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
         # self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderHelm2(output_dimensions)
@@ -324,7 +364,9 @@ class NIOHelmPermInv(nn.Module):
         #                                         nn.Linear(50, 50), nn.LeakyReLU(),
         #                                         nn.Linear(50, 1)).to(device)
         if self.fno_layers != 0:
-            self.fno = FNO_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         # self.attention = Attention(70 * 70, res=70 * 70)
         self.device = device
@@ -339,8 +381,8 @@ class NIOHelmPermInv(nn.Module):
         else:
             L = x.shape[1]
 
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
 
         grid_r = grid.view(-1, 2)
         x = self.deeponet(x, grid_r)
@@ -353,14 +395,22 @@ class NIOHelmPermInv(nn.Module):
         x = x.view(x.shape[0], x.shape[1], nx, ny)
 
         grid = grid.unsqueeze(0)
-        grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]).permute(0, 3, 1, 2)
+        grid = grid.expand(
+            x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+        ).permute(0, 3, 1, 2)
 
         x = torch.cat((grid, x), 1)
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
         # weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L), weight_trans_mat[:, 3].view(-1, 1)], dim=1)
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :2],
+                weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
         # weight_trans_mat = torch.cat([weight_trans_mat.repeat(1, L)], dim=1)
         x = x.permute(0, 2, 3, 1)
         # input_corr = x[..., np.random.randint(0, L, 2)]
@@ -400,16 +450,18 @@ class NIOHelmPermInv(nn.Module):
 
 
 class NIOHeartPerm(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIOHeartPerm, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
@@ -417,7 +469,9 @@ class NIOHeartPerm(nn.Module):
         network_properties_trunk["retrain"] = retrain_seed
 
         self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderRad2(output_dimensions)
@@ -425,7 +479,9 @@ class NIOHeartPerm(nn.Module):
         self.fc0 = nn.Linear(2 + 1, fno_architecture["width"])
 
         if self.fno_layers != 0:
-            self.fno = FNO_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         self.device = device
 
@@ -439,21 +495,29 @@ class NIOHeartPerm(nn.Module):
         else:
             L = x.shape[1]
 
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
 
         grid_r = grid.view(-1, 2)
         x = self.deeponet(x, grid_r)
 
         x = x.view(x.shape[0], x.shape[1], nx, ny)
         grid = grid.unsqueeze(0)
-        grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]).permute(0, 3, 1, 2)
+        grid = grid.expand(
+            x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+        ).permute(0, 3, 1, 2)
 
         x = torch.cat((grid, x), 1)
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :2],
+                weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
         x = x.permute(0, 2, 3, 1)
         x = torch.matmul(x, weight_trans_mat.T) + bias_trans_mat
         if self.fno_layers != 0:
@@ -487,16 +551,18 @@ class NIOHeartPerm(nn.Module):
 
 
 class NIORadPerm(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIORadPerm, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
@@ -504,7 +570,9 @@ class NIORadPerm(nn.Module):
         network_properties_trunk["retrain"] = retrain_seed
 
         self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
 
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
@@ -513,7 +581,9 @@ class NIORadPerm(nn.Module):
         self.fc0 = nn.Linear(1 + 1, fno_architecture["width"])
 
         if self.fno_layers != 0:
-            self.fno = FNO1d_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO1d_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         self.device = device
 
@@ -527,7 +597,7 @@ class NIORadPerm(nn.Module):
         else:
             L = x.shape[1]
         # x has shape N x L x nb
-        nx = (grid.shape[0])
+        nx = grid.shape[0]
 
         grid_r = grid.reshape(-1, 1)
 
@@ -541,7 +611,13 @@ class NIORadPerm(nn.Module):
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :1], weight_trans_mat[:, 1].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :1],
+                weight_trans_mat[:, 1].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
 
         x = x.permute(0, 2, 1)
         x = torch.matmul(x, weight_trans_mat.T) + bias_trans_mat
@@ -577,16 +653,18 @@ class NIORadPerm(nn.Module):
 
 
 class NIOWavePerm(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIOWavePerm, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
@@ -594,7 +672,9 @@ class NIOWavePerm(nn.Module):
         network_properties_trunk["retrain"] = retrain_seed
 
         self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
 
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
@@ -607,7 +687,9 @@ class NIOWavePerm(nn.Module):
         #                                         nn.Linear(50, 50), nn.LeakyReLU(),
         #                                         nn.Linear(50, 1)).to(device)
         if self.fno_layers != 0:
-            self.fno = FNO_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
         # self.attention = Attention(70 * 70, res=70 * 70)
         self.device = device
 
@@ -621,8 +703,8 @@ class NIOWavePerm(nn.Module):
             L = x.shape[3]
 
         # x has shape N x L x nb
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
         grid_r = grid.reshape(-1, 2)
 
         # x_i = x_i.permute(1, 0)
@@ -630,12 +712,20 @@ class NIOWavePerm(nn.Module):
         # x = self.attention(x)
         x = x.view(x.shape[0], x.shape[1], nx, ny)
         grid = grid.unsqueeze(0)
-        grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]).permute(0, 3, 1, 2)
+        grid = grid.expand(
+            x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+        ).permute(0, 3, 1, 2)
         x = torch.cat((grid, x), 1)
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
         # weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L), weight_trans_mat[:, 3].view(-1, 1)], dim=1)
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :2],
+                weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
         # weight_trans_mat = torch.cat([weight_trans_mat.repeat(1, L)], dim=1)
         x = x.permute(0, 2, 3, 1)
         # input_corr = x[..., np.random.randint(0, L, 2)]
@@ -674,24 +764,29 @@ class NIOWavePerm(nn.Module):
 
 ################################################################
 
+
 class NIOHelmPermInvAbl(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIOHelmPermInvAbl, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
         network_properties_branch["retrain"] = retrain_seed
         network_properties_trunk["retrain"] = retrain_seed
         # self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderHelm2(output_dimensions)
@@ -703,7 +798,9 @@ class NIOHelmPermInvAbl(nn.Module):
         #                                         nn.Linear(50, 50), nn.LeakyReLU(),
         #                                         nn.Linear(50, 1)).to(device)
         if self.fno_layers != 0:
-            self.fno = FNO_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         # self.attention = Attention(70 * 70, res=70 * 70)
         self.device = device
@@ -713,8 +810,8 @@ class NIOHelmPermInvAbl(nn.Module):
         # x has shape N x L x nb
         L = x.shape[1]
 
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
 
         grid_r = grid.view(-1, 2)
         x = self.deeponet(x, grid_r)
@@ -727,14 +824,22 @@ class NIOHelmPermInvAbl(nn.Module):
         x = x.view(x.shape[0], x.shape[1], nx, ny)
 
         grid = grid.unsqueeze(0)
-        grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]).permute(0, 3, 1, 2)
+        grid = grid.expand(
+            x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+        ).permute(0, 3, 1, 2)
 
         x = torch.cat((grid, x), 1)
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
         # weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L), weight_trans_mat[:, 3].view(-1, 1)], dim=1)
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :2],
+                weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
         # weight_trans_mat = torch.cat([weight_trans_mat.repeat(1, L)], dim=1)
         x = x.permute(0, 2, 3, 1)
         # input_corr = x[..., np.random.randint(0, L, 2)]
@@ -774,16 +879,18 @@ class NIOHelmPermInvAbl(nn.Module):
 
 
 class NIOHeartPermAbl(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIOHeartPermAbl, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
@@ -791,7 +898,9 @@ class NIOHeartPermAbl(nn.Module):
         network_properties_trunk["retrain"] = retrain_seed
 
         self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
         self.branch = EncoderRad2(output_dimensions)
@@ -799,7 +908,9 @@ class NIOHeartPermAbl(nn.Module):
         self.fc0 = nn.Linear(2 + 1, fno_architecture["width"])
 
         if self.fno_layers != 0:
-            self.fno = FNO_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         self.device = device
 
@@ -808,21 +919,29 @@ class NIOHeartPermAbl(nn.Module):
         # x has shape N x L x nb
         L = x.shape[1]
 
-        nx = (grid.shape[0])
-        ny = (grid.shape[1])
+        nx = grid.shape[0]
+        ny = grid.shape[1]
 
         grid_r = grid.view(-1, 2)
         x = self.deeponet(x, grid_r)
 
         x = x.view(x.shape[0], x.shape[1], nx, ny)
         grid = grid.unsqueeze(0)
-        grid = grid.expand(x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]).permute(0, 3, 1, 2)
+        grid = grid.expand(
+            x.shape[0], grid.shape[1], grid.shape[2], grid.shape[3]
+        ).permute(0, 3, 1, 2)
 
         x = torch.cat((grid, x), 1)
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :2], weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :2],
+                weight_trans_mat[:, 2].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
         x = x.permute(0, 2, 3, 1)
         x = torch.matmul(x, weight_trans_mat.T) + bias_trans_mat
         if self.fno_layers != 0:
@@ -856,16 +975,18 @@ class NIOHeartPermAbl(nn.Module):
 
 
 class NIORadPermAbl(nn.Module):
-    def __init__(self,
-                 input_dimensions_branch,
-                 input_dimensions_trunk,
-                 network_properties_branch,
-                 network_properties_trunk,
-                 fno_architecture,
-                 device,
-                 retrain_seed,
-                 fno_input_dimension=1000,
-                 padding_frac=1 / 4):
+    def __init__(
+        self,
+        input_dimensions_branch,
+        input_dimensions_trunk,
+        network_properties_branch,
+        network_properties_trunk,
+        fno_architecture,
+        device,
+        retrain_seed,
+        fno_input_dimension=1000,
+        padding_frac=1 / 4,
+    ):
         super(NIORadPermAbl, self).__init__()
         output_dimensions = network_properties_trunk["n_basis"]
         fno_architecture["retrain_fno"] = retrain_seed
@@ -873,7 +994,9 @@ class NIORadPermAbl(nn.Module):
         network_properties_trunk["retrain"] = retrain_seed
 
         self.fno_inputs = fno_input_dimension
-        self.trunk = FeedForwardNN(input_dimensions_trunk, output_dimensions, network_properties_trunk)
+        self.trunk = FeedForwardNN(
+            input_dimensions_trunk, output_dimensions, network_properties_trunk
+        )
 
         self.fno_layers = fno_architecture["n_layers"]
         print("Using InversionNet Encoder")
@@ -882,7 +1005,9 @@ class NIORadPermAbl(nn.Module):
         self.fc0 = nn.Linear(1 + 1, fno_architecture["width"])
 
         if self.fno_layers != 0:
-            self.fno = FNO1d_WOR(fno_architecture, device=device, padding_frac=padding_frac)
+            self.fno = FNO1d_WOR(
+                fno_architecture, device=device, padding_frac=padding_frac
+            )
 
         self.device = device
 
@@ -891,7 +1016,7 @@ class NIORadPermAbl(nn.Module):
         # x has shape N x L x nb
         L = x.shape[1]
         # x has shape N x L x nb
-        nx = (grid.shape[0])
+        nx = grid.shape[0]
 
         grid_r = grid.reshape(-1, 1)
 
@@ -905,7 +1030,13 @@ class NIORadPermAbl(nn.Module):
 
         weight_trans_mat = self.fc0.weight.data
         bias_trans_mat = self.fc0.bias.data
-        weight_trans_mat = torch.cat([weight_trans_mat[:, :1], weight_trans_mat[:, 1].view(-1, 1).repeat(1, L) / L], dim=1)
+        weight_trans_mat = torch.cat(
+            [
+                weight_trans_mat[:, :1],
+                weight_trans_mat[:, 1].view(-1, 1).repeat(1, L) / L,
+            ],
+            dim=1,
+        )
 
         x = x.permute(0, 2, 1)
         x = torch.matmul(x, weight_trans_mat.T) + bias_trans_mat

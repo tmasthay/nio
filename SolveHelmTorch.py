@@ -9,7 +9,7 @@ w = 2 * pi
 
 
 def g(x_, y_):
-    return 0.
+    return 0.0
 
 
 def exact_u(x_, y_):
@@ -59,11 +59,11 @@ def solve_helm(kappa, L, plot=False):
         n = ii - 1 + jj * nx
         o = ii + (jj + 1) * nx
         p = ii + (jj - 1) * nx
-        A[l, l] = -4 / h ** 2 + w ** 2 * kappa(x_, y_) ** 2
-        A[m, l] = 1 / h ** 2
-        A[n, l] = 1 / h ** 2
-        A[o, l] = 1 / h ** 2
-        A[p, l] = 1 / h ** 2
+        A[l, l] = -4 / h**2 + w**2 * kappa(x_, y_) ** 2
+        A[m, l] = 1 / h**2
+        A[n, l] = 1 / h**2
+        A[o, l] = 1 / h**2
+        A[p, l] = 1 / h**2
 
         inputs[l, 0] = x_
         inputs[l, 1] = y_
@@ -80,15 +80,15 @@ def solve_helm(kappa, L, plot=False):
         o = ii + (jj + 1) * nx
         o2 = ii + (jj + 2) * nx
 
-        A[l, l] = -(1 / dx ** 2 +
-                    1 / dx ** 2 -
-                    1 / dy ** 2) + w ** 2 * kappa(x_, y_) ** 2
+        A[l, l] = (
+            -(1 / dx**2 + 1 / dx**2 - 1 / dy**2) + w**2 * kappa(x_, y_) ** 2
+        )
 
-        A[m, l] = 1 / dx ** 2
-        A[n, l] = 1 / dx ** 2
+        A[m, l] = 1 / dx**2
+        A[n, l] = 1 / dx**2
 
-        A[o, l] = -1 / dy ** 2 - 1 / dy ** 2
-        A[o2, l] = 1 / dy ** 2
+        A[o, l] = -1 / dy**2 - 1 / dy**2
+        A[o2, l] = 1 / dy**2
 
         inputs[l, 0] = x_
         inputs[l, 1] = y_
@@ -109,15 +109,15 @@ def solve_helm(kappa, L, plot=False):
         o = ii + (jj + 1) * nx
         p = ii + (jj - 1) * nx
 
-        A[l, l] = -(1 / dy ** 2 +
-                    1 / dy ** 2 -
-                    1 / dx ** 2) + w ** 2 * kappa(x_, y_) ** 2
+        A[l, l] = (
+            -(1 / dy**2 + 1 / dy**2 - 1 / dx**2) + w**2 * kappa(x_, y_) ** 2
+        )
 
-        A[m, l] = -1 / dx ** 2 - 1 / dx ** 2
-        A[m2, l] = 1 / dx ** 2
+        A[m, l] = -1 / dx**2 - 1 / dx**2
+        A[m2, l] = 1 / dx**2
 
-        A[o, l] = 1 / dy ** 2
-        A[p, l] = 1 / dy ** 2
+        A[o, l] = 1 / dy**2
+        A[p, l] = 1 / dy**2
 
         inputs[l, 0] = x_
         inputs[l, 1] = y_
@@ -128,7 +128,9 @@ def solve_helm(kappa, L, plot=False):
         tmp[l] = bc(x_, y_, coeff_bc)
         mask[l] = 1
 
-        i, j = torch.arange(1, nx - 1), torch.full((1,), fill_value=ny - 1, dtype=i.dtype)
+        i, j = torch.arange(1, nx - 1), torch.full(
+            (1,), fill_value=ny - 1, dtype=i.dtype
+        )
         ii, jj = torch.meshgrid(i, j)
         x_, y_ = torch.meshgrid(x[i], y[j])
 
@@ -138,14 +140,14 @@ def solve_helm(kappa, L, plot=False):
         p = ii + (jj - 1) * nx
         p2 = ii + (jj - 2) * nx
 
-        A[l, l] = -(1 / dx ** 2 +
-                    1 / dx ** 2 -
-                    1 / dy ** 2) + w ** 2 * kappa(x_, y_) ** 2
-        A[m, l] = 1 / dx ** 2
-        A[n, l] = 1 / dx ** 2
+        A[l, l] = (
+            -(1 / dx**2 + 1 / dx**2 - 1 / dy**2) + w**2 * kappa(x_, y_) ** 2
+        )
+        A[m, l] = 1 / dx**2
+        A[n, l] = 1 / dx**2
 
-        A[p, l] = -1 / dy ** 2 - 1 / dy ** 2
-        A[p2, l] = 1 / dy ** 2
+        A[p, l] = -1 / dy**2 - 1 / dy**2
+        A[p2, l] = 1 / dy**2
 
         inputs[l, 0] = x_
         inputs[l, 1] = y_
@@ -156,7 +158,9 @@ def solve_helm(kappa, L, plot=False):
         tmp[l] = bc(x_, y_, coeff_bc)
         mask[l] = 1
 
-        j, i = torch.arange(1, ny - 1), torch.full((1,), fill_value=nx - 1, dtype=i.dtype)
+        j, i = torch.arange(1, ny - 1), torch.full(
+            (1,), fill_value=nx - 1, dtype=i.dtype
+        )
         ii, jj = torch.meshgrid(i, j)
         x_, y_ = torch.meshgrid(x[i], y[j])
 
@@ -166,15 +170,15 @@ def solve_helm(kappa, L, plot=False):
         o = ii + jj * nx
         p = ii + (jj - 1) * nx
 
-        A[l, l] = -(1 / dy ** 2 +
-                    1 / dy ** 2 -
-                    1 / dx ** 2) + w ** 2 * kappa(x_, y_) ** 2
+        A[l, l] = (
+            -(1 / dy**2 + 1 / dy**2 - 1 / dx**2) + w**2 * kappa(x_, y_) ** 2
+        )
 
-        A[n2, l] = 1 / dx ** 2
-        A[n, l] = - 1 / dx ** 2 - 1 / dx ** 2
+        A[n2, l] = 1 / dx**2
+        A[n, l] = -1 / dx**2 - 1 / dx**2
 
-        A[o, l] = 1 / dy ** 2
-        A[p, l] = 1 / dy ** 2
+        A[o, l] = 1 / dy**2
+        A[p, l] = 1 / dy**2
 
         inputs[l, 0] = x_
         inputs[l, 1] = y_
@@ -196,7 +200,7 @@ def solve_helm(kappa, L, plot=False):
         inputs[l, 0] = x_
         inputs[l, 1] = y_
 
-        A[l, l] = (-1 / dx ** 2 - 1 / dy ** 2) + w ** 2 * kappa(x_, y_) ** 2
+        A[l, l] = (-1 / dx**2 - 1 / dy**2) + w**2 * kappa(x_, y_) ** 2
 
         b[l] = g(x_, y_)
         u_ex[l] = exact_u(x_, y_)
@@ -224,17 +228,28 @@ def solve_helm(kappa, L, plot=False):
         u_free = torch.linalg.solve(A_masked, f_masked.reshape(-1, 1))
 
         u_free = u_free.reshape(nx - 2, ny - 2)
-        u_free = torch.nn.functional.pad(u_free, (1, 1, 1, 1), value=0).reshape(-1, )
+        u_free = torch.nn.functional.pad(u_free, (1, 1, 1, 1), value=0).reshape(
+            -1
+        )
 
         u = torch.where(~mask, u_free, tmp)
 
         gr = inputs.reshape(nx, ny, 2)
 
         if plot:
-            err = (torch.mean(abs(u - u_ex) ** 2) / torch.mean(u_ex ** 2)) ** 0.5 * 100
+            err = (
+                torch.mean(abs(u - u_ex) ** 2) / torch.mean(u_ex**2)
+            ) ** 0.5 * 100
             q = index // 3
             mod = index % 3
-            axes[q, mod].contourf(gr[:, :, 0], gr[:, :, 1], u.reshape(nx, ny).detach(), aspect="auto", cmap="jet", levels=200)
+            axes[q, mod].contourf(
+                gr[:, :, 0],
+                gr[:, :, 1],
+                u.reshape(nx, ny).detach(),
+                aspect="auto",
+                cmap="jet",
+                levels=200,
+            )
             print("L2 relative error norm: ", err)
 
         i, j = torch.arange(1, nx - 1), torch.zeros((1,), dtype=i.dtype)
@@ -245,7 +260,9 @@ def solve_helm(kappa, L, plot=False):
         u_der_1 = -(u[o] - u[l]) / dy
         # u_b.append(u[l])
 
-        j, i = torch.arange(1, ny - 1), torch.full((1,), fill_value=nx - 1, dtype=i.dtype)
+        j, i = torch.arange(1, ny - 1), torch.full(
+            (1,), fill_value=nx - 1, dtype=i.dtype
+        )
         ii, jj = torch.meshgrid(i, j)
         l = ii + jj * nx
         n = ii - 1 + jj * nx
@@ -254,7 +271,9 @@ def solve_helm(kappa, L, plot=False):
         # u_b.append(u[l].T)
 
         # for i in range(0, nx):
-        i, j = torch.arange(nx - 2, 0, -1), torch.full((1,), fill_value=ny - 1, dtype=i.dtype)
+        i, j = torch.arange(nx - 2, 0, -1), torch.full(
+            (1,), fill_value=ny - 1, dtype=i.dtype
+        )
         i, j = torch.meshgrid(i, j)
 
         l = i + j * nx
@@ -263,7 +282,9 @@ def solve_helm(kappa, L, plot=False):
         u_der_3 = (u[l] - u[p]) / dx
         # u_b.append(u[l])
 
-        j, i = torch.arange(ny - 2, 0, -1), torch.full((1,), fill_value=0, dtype=i.dtype)
+        j, i = torch.arange(ny - 2, 0, -1), torch.full(
+            (1,), fill_value=0, dtype=i.dtype
+        )
         i, j = torch.meshgrid(i, j)
 
         l = i + j * nx
@@ -276,12 +297,22 @@ def solve_helm(kappa, L, plot=False):
         list_neumann_map.append(u_der.reshape(-1, 1))
 
         if plot:
-            ax1.scatter(torch.arange(0, u_der.shape[0]), u_der.detach(), label="Derivative", s=8)
+            ax1.scatter(
+                torch.arange(0, u_der.shape[0]),
+                u_der.detach(),
+                label="Derivative",
+                s=8,
+            )
             plt.legend()
 
     if plot:
         plt.figure()
-        plt.contourf(gr[:, :, 0], gr[:, :, 1], speed_coeff.reshape(nx, ny).detach(), levels=200)
+        plt.contourf(
+            gr[:, :, 0],
+            gr[:, :, 1],
+            speed_coeff.reshape(nx, ny).detach(),
+            levels=200,
+        )
 
     end = time.time()
 

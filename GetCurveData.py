@@ -8,11 +8,11 @@ hf = h5py.File('CurveVel_A/CurveVelData.h5', 'w')
 hf.create_group("training")
 hf.create_group("validation")
 hf.create_group("testing")
-mean_fun_inp = 0.
-mean_fun_out = 0.
+mean_fun_inp = 0.0
+mean_fun_out = 0.0
 
-std_fun_inp = 0.
-std_fun_out = 0.
+std_fun_inp = 0.0
+std_fun_out = 0.0
 k = 1
 
 training_size = 22000
@@ -46,10 +46,24 @@ for j in range(1, 61):
             old_mean_out = mean_fun_out
 
             mean_fun_inp = mean_fun_inp * (k - 1) / k + data[i] / k
-            std_fun_inp = std_fun_inp + ((data[i] - mean_fun_inp) * (data[i] - old_mean_inp) - std_fun_inp) / k
+            std_fun_inp = (
+                std_fun_inp
+                + (
+                    (data[i] - mean_fun_inp) * (data[i] - old_mean_inp)
+                    - std_fun_inp
+                )
+                / k
+            )
 
             mean_fun_out = mean_fun_out * (k - 1) / k + model[i, 0] / k
-            std_fun_out = std_fun_out + ((model[i, 0] - mean_fun_out) * (model[i, 0] - old_mean_out) - std_fun_out) / k
+            std_fun_out = (
+                std_fun_out
+                + (
+                    (model[i, 0] - mean_fun_out) * (model[i, 0] - old_mean_out)
+                    - std_fun_out
+                )
+                / k
+            )
 
         if training_size <= k < training_size + val_size:
             which = "validation"
@@ -62,10 +76,10 @@ for j in range(1, 61):
         k = k + 1
 
 print(std_fun_inp[std_fun_inp < 0])
-std_fun_inp = std_fun_inp ** 0.5
+std_fun_inp = std_fun_inp**0.5
 
 print(std_fun_out[std_fun_out < 0])
-std_fun_out = std_fun_out ** 0.5
+std_fun_out = std_fun_out**0.5
 
 print(min_inp, max_inp, min_out, max_out)
 

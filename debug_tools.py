@@ -2,13 +2,7 @@ import math
 
 import torch
 
-units = {
-    0: 'B',
-    1: 'KiB',
-    2: 'MiB',
-    3: 'GiB',
-    4: 'TiB'
-}
+units = {0: 'B', 1: 'KiB', 2: 'MiB', 3: 'GiB', 4: 'TiB'}
 
 
 def format_mem(x):
@@ -21,7 +15,7 @@ def format_mem(x):
         return round(x, 2), 'B'
 
     scale = math.log2(abs(x)) // 10
-    scaled_x = x / 1024 ** scale
+    scaled_x = x / 1024**scale
     unit = units[scale]
 
     if int(scaled_x) == scaled_x:
@@ -36,11 +30,12 @@ def format_tensor_size(x):
     return f'{val}{unit}'
 
 
-class CudaMemoryDebugger():
+class CudaMemoryDebugger:
     """
     Helper to track changes in CUDA memory.
 
     """
+
     DEVICE = 'cuda'
     LAST_MEM = 0
     ENABLED = True
@@ -76,8 +71,10 @@ class CudaMemoryDebugger():
 
             else:
                 diff_fmt, diff_unit = format_mem(diff)
-                print(f'{desc} {cur_mem_fmt:.2f}{cur_mem_unit}'
-                      f' ({diff_fmt:+}{diff_unit})')
+                print(
+                    f'{desc} {cur_mem_fmt:.2f}{cur_mem_unit}'
+                    f' ({diff_fmt:+}{diff_unit})'
+                )
 
         CudaMemoryDebugger.LAST_MEM = cur_mem
 

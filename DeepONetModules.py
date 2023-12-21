@@ -6,25 +6,26 @@ from debug_tools import *
 
 def kaiming_init(m):
     if type(m) == nn.Linear:
-        torch.nn.init.kaiming_uniform_(m.weight.data, a=0.01, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_uniform_(
+            m.weight.data, a=0.01, nonlinearity='leaky_relu'
+        )
         torch.nn.init.zeros_(m.bias.data)
 
 
 class FourierFeatures(nn.Module):
-
     def __init__(self, scale, mapping_size, device):
         super().__init__()
         self.mapping_size = mapping_size
         self.B = scale * torch.randn((self.mapping_size, 2)).to(device)
 
     def forward(self, x):
-        x_proj = torch.matmul((2. * np.pi * x), self.B.T)
+        x_proj = torch.matmul((2.0 * np.pi * x), self.B.T)
         inp = torch.cat([torch.sin(x_proj), torch.cos(x_proj)], axis=-1)
         return inp
 
 
 class Swish(nn.Module):
-    def __init__(self, ):
+    def __init__(self):
         super().__init__()
 
     def forward(self, x):
@@ -32,7 +33,7 @@ class Swish(nn.Module):
 
 
 class Sin(nn.Module):
-    def __init__(self, ):
+    def __init__(self):
         super().__init__()
 
     def forward(self, x):
@@ -68,8 +69,16 @@ def init_xavier(model):
     torch.manual_seed(model.retrain)
 
     def init_weights(m):
-        if type(m) == nn.Linear and m.weight.requires_grad and m.bias.requires_grad:
-            if model.act_string == "tanh" or model.act_string == "relu" or model.act_string == "leaky_relu":
+        if (
+            type(m) == nn.Linear
+            and m.weight.requires_grad
+            and m.bias.requires_grad
+        ):
+            if (
+                model.act_string == "tanh"
+                or model.act_string == "relu"
+                or model.act_string == "leaky_relu"
+            ):
                 gain = nn.init.calculate_gain(model.act_string)
             else:
                 gain = 1
@@ -80,7 +89,6 @@ def init_xavier(model):
 
 
 class FeedForwardNN(nn.Module):
-
     def __init__(self, input_dimension, output_dimension, network_architecture):
         super(FeedForwardNN, self).__init__()
         self.input_dimension = input_dimension
@@ -95,10 +103,14 @@ class FeedForwardNN(nn.Module):
 
         self.input_layer = nn.Linear(self.input_dimension, self.neurons)
 
-        self.hidden_layers = nn.ModuleList(
-            [nn.Linear(self.neurons, self.neurons) for _ in range(self.n_hidden_layers - 1)])
-        self.batch_layers = nn.ModuleList(
-            [nn.BatchNorm1d(self.neurons) for _ in range(self.n_hidden_layers - 1)])
+        self.hidden_layers = nn.ModuleList([
+            nn.Linear(self.neurons, self.neurons)
+            for _ in range(self.n_hidden_layers - 1)
+        ])
+        self.batch_layers = nn.ModuleList([
+            nn.BatchNorm1d(self.neurons)
+            for _ in range(self.n_hidden_layers - 1)
+        ])
         self.output_layer = nn.Linear(self.neurons, self.output_dimension)
 
         self.activation = activation(self.act_string)
@@ -120,7 +132,10 @@ class FeedForwardNN(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams
 
@@ -130,7 +145,7 @@ class DeepOnetNoBiasOrg(nn.Module):
         super(DeepOnetNoBiasOrg, self).__init__()
         self.branch = branch
         self.trunk = trunk
-        self.b0 = torch.nn.Parameter(torch.tensor(0.), requires_grad=True)
+        self.b0 = torch.nn.Parameter(torch.tensor(0.0), requires_grad=True)
         self.p = self.trunk.output_dimension
         '''self.b0 = torch.nn.Sequential(nn.Linear(self.trunk.input_dimension, 128),
                                       nn.LeakyReLU(),
@@ -148,11 +163,10 @@ class DeepOnetNoBiasOrg(nn.Module):
         # print(bias.shape)
         # print(torch.matmul(weights, basis.T).shape)
         # return (torch.matmul(weights, basis.T) + self.b0)/self.p + mean
-        return (torch.matmul(weights, basis.T) + self.b0) / self.p ** 0.5
+        return (torch.matmul(weights, basis.T) + self.b0) / self.p**0.5
 
 
 class KappaOpt(nn.Module):
-
     def __init__(self, network_architecture):
         super(KappaOpt, self).__init__()
         self.input_dimension = 2
@@ -166,10 +180,14 @@ class KappaOpt(nn.Module):
 
         self.input_layer = nn.Linear(self.input_dimension, self.neurons)
 
-        self.hidden_layers = nn.ModuleList(
-            [nn.Linear(self.neurons, self.neurons) for _ in range(self.n_hidden_layers - 1)])
-        self.batch_layers = nn.ModuleList(
-            [nn.BatchNorm1d(self.neurons) for _ in range(self.n_hidden_layers - 1)])
+        self.hidden_layers = nn.ModuleList([
+            nn.Linear(self.neurons, self.neurons)
+            for _ in range(self.n_hidden_layers - 1)
+        ])
+        self.batch_layers = nn.ModuleList([
+            nn.BatchNorm1d(self.neurons)
+            for _ in range(self.n_hidden_layers - 1)
+        ])
         self.output_layer = nn.Linear(self.neurons, 1)
 
         self.activation = activation(self.act_string)
@@ -185,7 +203,7 @@ class KappaOpt(nn.Module):
         x = self.activation(self.input_layer(x))
         for k, (l, b) in enumerate(zip(self.hidden_layers, self.batch_layers)):
             x = self.activation(self.dropout(l(x)))
-        x = self.output_layer(x).reshape(x1.squeeze(-1).shape, )
+        x = self.output_layer(x).reshape(x1.squeeze(-1).shape)
         return x
 
     def print_size(self):
@@ -196,6 +214,9 @@ class KappaOpt(nn.Module):
             nparams += param.numel()
             nbytes += param.data.element_size() * param.numel()
 
-        print(f'Total number of model parameters: {nparams} (~{format_tensor_size(nbytes)})')
+        print(
+            'Total number of model parameters:'
+            f' {nparams} (~{format_tensor_size(nbytes)})'
+        )
 
         return nparams

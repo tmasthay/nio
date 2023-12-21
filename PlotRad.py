@@ -52,22 +52,70 @@ path2 = main_folder + "/Best_fcnn_rad"
 path3 = main_folder + "/Best_don_rad"
 save_path = main_folder
 
-norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-norm2 = pd.read_csv(path2 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-norm3 = pd.read_csv(path3 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+norm1 = (
+    pd.read_csv(
+        path1 + "/training_properties.txt", header=None, sep=",", index_col=0
+    )
+    .transpose()
+    .reset_index()
+    .drop("index", 1)["norm"][0]
+)
+norm2 = (
+    pd.read_csv(
+        path2 + "/training_properties.txt", header=None, sep=",", index_col=0
+    )
+    .transpose()
+    .reset_index()
+    .drop("index", 1)["norm"][0]
+)
+norm3 = (
+    pd.read_csv(
+        path3 + "/training_properties.txt", header=None, sep=",", index_col=0
+    )
+    .transpose()
+    .reset_index()
+    .drop("index", 1)["norm"][0]
+)
 
-model1 = torch.load(path1 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+model1 = torch.load(
+    path1 + "/model.pkl", map_location=torch.device('cpu')
+).cpu()
 model1 = model1.eval()
 
-model2 = torch.load(path2 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+model2 = torch.load(
+    path2 + "/model.pkl", map_location=torch.device('cpu')
+).cpu()
 model2 = model2.eval()
 
-model3 = torch.load(path3 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+model3 = torch.load(
+    path3 + "/model.pkl", map_location=torch.device('cpu')
+).cpu()
 model3 = model3.eval()
 
-test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device="cpu", which="testing", mod="nio_new", noise=noise)
-test_dataset_2 = MyDataset2(norm=norm2, inputs_bool=True, device="cpu", which="testing", mod="fcnn", noise=noise)
-test_dataset_3 = MyDataset3(norm=norm3, inputs_bool=True, device="cpu", which="testing", mod="don", noise=noise)
+test_dataset = MyDataset1(
+    norm=norm1,
+    inputs_bool=True,
+    device="cpu",
+    which="testing",
+    mod="nio_new",
+    noise=noise,
+)
+test_dataset_2 = MyDataset2(
+    norm=norm2,
+    inputs_bool=True,
+    device="cpu",
+    which="testing",
+    mod="fcnn",
+    noise=noise,
+)
+test_dataset_3 = MyDataset3(
+    norm=norm3,
+    inputs_bool=True,
+    device="cpu",
+    which="testing",
+    mod="don",
+    noise=noise,
+)
 
 print("########################################################")
 print("NIO params")
@@ -84,9 +132,15 @@ model1 = model1.to(device)
 model2 = model2.to(device)
 model3 = model3.to(device)
 # %%
-testing_set = DataLoader(test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
-testing_set_2 = DataLoader(test_dataset_2, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
-testing_set_3 = DataLoader(test_dataset_3, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
+testing_set = DataLoader(
+    test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
+testing_set_2 = DataLoader(
+    test_dataset_2, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
+testing_set_3 = DataLoader(
+    test_dataset_3, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
 grid = test_dataset.get_grid().squeeze(0)
 # %%
 ########################################################################################
@@ -101,8 +155,8 @@ errs_vec_2 = np.zeros((n, 3))
 errs_vec_3 = np.zeros((n, 3))
 
 running_relative_test_mse = 0.0
-running_relative_test_mse_2 = 0.
-running_relative_test_mse_3 = 0.
+running_relative_test_mse_2 = 0.0
+running_relative_test_mse_3 = 0.0
 running_ssim = 0.0
 ssim_loss = pytorch_ssim.SSIM(window_size=11)
 min_model = test_dataset.min_model
@@ -114,7 +168,11 @@ if m != "false":
     idx_sorted = idx  # [np.argsort(idx)]
 
 with torch.no_grad():
-    for step, ((input_batch, output_batch), (input_batch_2, _), (input_batch_3, _)) in enumerate(zip(testing_set, testing_set_2, testing_set_3)):
+    for step, (
+        (input_batch, output_batch),
+        (input_batch_2, _),
+        (input_batch_3, _),
+    ) in enumerate(zip(testing_set, testing_set_2, testing_set_3)):
         print(input_batch.shape, input_batch_2.shape, input_batch_3.shape)
         input_batch = input_batch.to(device)
         output_batch = output_batch.to(device)
@@ -131,8 +189,12 @@ with torch.no_grad():
             # print(input_batch.shape)
 
             # input_batch = torch.nn.functional.interpolate(input_batch, size=(32,32), mode="nearest")
-            input_batch_2 = torch.nn.functional.interpolate(input_batch_2, size=(32, 32), mode="nearest")
-            input_batch_3 = torch.nn.functional.interpolate(input_batch_3, size=(32, 32), mode="nearest")
+            input_batch_2 = torch.nn.functional.interpolate(
+                input_batch_2, size=(32, 32), mode="nearest"
+            )
+            input_batch_3 = torch.nn.functional.interpolate(
+                input_batch_3, size=(32, 32), mode="nearest"
+            )
 
         grid = grid.to(device)
 
@@ -159,17 +221,31 @@ with torch.no_grad():
                 my_loss = torch.nn.L1Loss()
             else:
                 raise ValueError("Choose p = 1 or p=2")
-            loss_test = my_loss(pred_test_1, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test = my_loss(pred_test_1, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test = loss_test.item() ** (1 / p) * 100
-            loss_test_2 = my_loss(pred_test_2, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test_2 = my_loss(pred_test_2, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test_2 = loss_test_2.item() ** (1 / p) * 100
-            loss_test_3 = my_loss(pred_test_3, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test_3 = my_loss(pred_test_3, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test_3 = loss_test_3.item() ** (1 / p) * 100
 
             if p == 1:
-                running_relative_test_mse = running_relative_test_mse * step / (step + 1) + err_test / (step + 1)
-                running_relative_test_mse_2 = running_relative_test_mse_2 * step / (step + 1) + err_test_2 / (step + 1)
-                running_relative_test_mse_3 = running_relative_test_mse_3 * step / (step + 1) + err_test_3 / (step + 1)
+                running_relative_test_mse = running_relative_test_mse * step / (
+                    step + 1
+                ) + err_test / (step + 1)
+                running_relative_test_mse_2 = (
+                    running_relative_test_mse_2 * step / (step + 1)
+                    + err_test_2 / (step + 1)
+                )
+                running_relative_test_mse_3 = (
+                    running_relative_test_mse_3 * step / (step + 1)
+                    + err_test_3 / (step + 1)
+                )
 
             errs_vec[step, p - 1] = err_test
             errs_vec_2[step, p - 1] = err_test_2
@@ -196,23 +272,63 @@ with torch.no_grad():
         # running_ssim = running_ssim * step / (step + 1) + ssim_1 / (step + 1)
 
         if step % 1 == 0:
-            print("Batch: ", step, running_relative_test_mse, running_relative_test_mse_2, running_relative_test_mse_3)
+            print(
+                "Batch: ",
+                step,
+                running_relative_test_mse,
+                running_relative_test_mse_2,
+                running_relative_test_mse_3,
+            )
         if step >= n - 1:
             break
 
 if not plot:
-    with open(save_path + '/sum_errors_complete_' + str(noise) + '_' + str(m) + "_" + str("rad") + '.txt', 'w') as file:
+    with open(
+        save_path
+        + '/sum_errors_complete_'
+        + str(noise)
+        + '_'
+        + str(m)
+        + "_"
+        + str("rad")
+        + '.txt',
+        'w',
+    ) as file:
         file.write("Median L1 NIO:" + str(np.median(errs_vec[:, 0])) + "\n")
         file.write("Median L1 FCNN:" + str(np.median(errs_vec_2[:, 0])) + "\n")
         file.write("Median L1 DON:" + str(np.median(errs_vec_3[:, 0])) + "\n")
 
-        file.write("25 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.25)) + "\n")
-        file.write("25 Quantile L1 FCNN:" + str(np.quantile(errs_vec_2[:, 0], 0.25)) + "\n")
-        file.write("25 Quantile L1 DON:" + str(np.quantile(errs_vec_3[:, 0], 0.25)) + "\n")
+        file.write(
+            "25 Quantile L1 NIO:"
+            + str(np.quantile(errs_vec[:, 0], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L1 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 0], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L1 DON:"
+            + str(np.quantile(errs_vec_3[:, 0], 0.25))
+            + "\n"
+        )
 
-        file.write("75 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.75)) + "\n")
-        file.write("75 Quantile L1 FCNN:" + str(np.quantile(errs_vec_2[:, 0], 0.75)) + "\n")
-        file.write("75 Quantile L1 DON:" + str(np.quantile(errs_vec_3[:, 0], 0.75)) + "\n")
+        file.write(
+            "75 Quantile L1 NIO:"
+            + str(np.quantile(errs_vec[:, 0], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L1 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 0], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L1 DON:"
+            + str(np.quantile(errs_vec_3[:, 0], 0.75))
+            + "\n"
+        )
 
         file.write("Std L1 NIO:" + str(np.std(errs_vec[:, 0])) + "\n")
         file.write("Std L1 FCNN:" + str(np.std(errs_vec_2[:, 0])) + "\n")
@@ -226,13 +342,37 @@ if not plot:
         file.write("Median L2 FCNN:" + str(np.median(errs_vec_2[:, 1])) + "\n")
         file.write("Median L2 DON:" + str(np.median(errs_vec_3[:, 1])) + "\n")
 
-        file.write("25 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.25)) + "\n")
-        file.write("25 Quantile L2 FCNN:" + str(np.quantile(errs_vec_2[:, 1], 0.25)) + "\n")
-        file.write("25 Quantile L2 DON:" + str(np.quantile(errs_vec_3[:, 1], 0.25)) + "\n")
+        file.write(
+            "25 Quantile L2 NIO:"
+            + str(np.quantile(errs_vec[:, 1], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L2 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 1], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L2 DON:"
+            + str(np.quantile(errs_vec_3[:, 1], 0.25))
+            + "\n"
+        )
 
-        file.write("75 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.75)) + "\n")
-        file.write("75 Quantile L2 FCNN:" + str(np.quantile(errs_vec_2[:, 1], 0.75)) + "\n")
-        file.write("75 Quantile L2 DON:" + str(np.quantile(errs_vec_3[:, 1], 0.75)) + "\n")
+        file.write(
+            "75 Quantile L2 NIO:"
+            + str(np.quantile(errs_vec[:, 1], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L2 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 1], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L2 DON:"
+            + str(np.quantile(errs_vec_3[:, 1], 0.75))
+            + "\n"
+        )
 
         file.write("Std L2 NIO:" + str(np.std(errs_vec[:, 1])) + "\n")
         file.write("Std L2 FCNN:" + str(np.std(errs_vec_2[:, 1])) + "\n")
@@ -256,8 +396,20 @@ else:
 
         # err_stack = ((torch.mean(torch.abs(labels_i - pred_test_i_stack) ** p)
         #              / torch.mean(torch.abs(labels_i) ** p)) ** (1 / p)).item() * 100
-        err_1 = ((torch.mean(torch.abs(labels_i - pred_test_i_1) ** p) / torch.mean(torch.abs(labels_i) ** p)) ** (1 / p)).item() * 100
-        err_2 = ((torch.mean(torch.abs(labels_i - pred_test_i_2) ** p) / torch.mean(torch.abs(labels_i) ** p)) ** (1 / p)).item() * 100
+        err_1 = (
+            (
+                torch.mean(torch.abs(labels_i - pred_test_i_1) ** p)
+                / torch.mean(torch.abs(labels_i) ** p)
+            )
+            ** (1 / p)
+        ).item() * 100
+        err_2 = (
+            (
+                torch.mean(torch.abs(labels_i - pred_test_i_2) ** p)
+                / torch.mean(torch.abs(labels_i) ** p)
+            )
+            ** (1 / p)
+        ).item() * 100
         err_1 = round(err_1, 1)
         err_2 = round(err_2, 1)
         print(i, err_1, err_2)

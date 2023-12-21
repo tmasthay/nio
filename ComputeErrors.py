@@ -83,7 +83,7 @@ if which == "sine" or which == "step" or "helm" in which:
         from Problems.PoissonSin import MyDataset as MyDataset1
         from Problems.PoissonSin import MyDataset as MyDataset2
         from Problems.PoissonSin import MyDataset as MyDataset3
-    if "helm" in  which:
+    if "helm" in which:
         from Problems.HelmNIO import MyDataset as MyDataset1
         from Problems.HelmNIO import MyDataset as MyDataset2
         from Problems.HelmNIO import MyDataset as MyDataset3
@@ -101,26 +101,68 @@ if which == "curve" or which == "style":
     path2 = main_folder + "/Best_fcnn_" + which
     path3 = main_folder + "/Best_don_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
     norm2 = "log-minmax"
-    norm3 = pd.read_csv(path3 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm3 = (
+        pd.read_csv(
+            path3 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
     model1 = torch.load(path1 + "/model.pkl", map_location=torch.device(device))
     model1 = model1.eval()
 
-    model2 = network.model_dict["InversionNet"](upsample_mode=None,
-                                                sample_spatial=1, sample_temporal=1)
+    model2 = network.model_dict["InversionNet"](
+        upsample_mode=None, sample_spatial=1, sample_temporal=1
+    )
 
-    checkpoint = torch.load(path2 + "/checkpoint.pth", map_location=torch.device(device))
+    checkpoint = torch.load(
+        path2 + "/checkpoint.pth", map_location=torch.device(device)
+    )
     model2.load_state_dict(network.replace_legacy(checkpoint['model']))
     model2 = model2.eval()
 
     model3 = torch.load(path3 + "/model.pkl", map_location=torch.device(device))
     model3 = model3.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device=device, which="testing", noise=noise, mod="nio_new")
-    test_dataset_2 = MyDataset2(norm=norm2, inputs_bool=True, device=device, which="testing", noise=noise)
-    test_dataset_3 = MyDataset3(norm=norm3, inputs_bool=True, device=device, which="testing", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        noise=noise,
+        mod="nio_new",
+    )
+    test_dataset_2 = MyDataset2(
+        norm=norm2,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        noise=noise,
+    )
+    test_dataset_3 = MyDataset3(
+        norm=norm3,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        noise=noise,
+    )
 
     print(norm1, norm2, norm3)
 
@@ -129,9 +171,39 @@ if which == "sine":
     path2 = main_folder + "/Best_fcnn_" + which
     path3 = main_folder + "/Best_don_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm2 = pd.read_csv(path2 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm3 = pd.read_csv(path3 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm2 = (
+        pd.read_csv(
+            path2 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm3 = (
+        pd.read_csv(
+            path3 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
     model1 = torch.load(path1 + "/model.pkl", map_location=torch.device(device))
     model1 = model1.eval()
@@ -142,18 +214,69 @@ if which == "sine":
     model3 = torch.load(path3 + "/model.pkl", map_location=torch.device(device))
     model3 = model3.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device="cpu", which="testing", mod="nio_new", noise=noise)
-    test_dataset_2 = MyDataset2(norm=norm2, inputs_bool=True, device="cpu", which="testing", mod="fcnn", noise=noise)
-    test_dataset_3 = MyDataset2(norm=norm3, inputs_bool=True, device="cpu", which="testing", mod="don", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
+    test_dataset_2 = MyDataset2(
+        norm=norm2,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="fcnn",
+        noise=noise,
+    )
+    test_dataset_3 = MyDataset2(
+        norm=norm3,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="don",
+        noise=noise,
+    )
 
 if which == "eit":
     path1 = main_folder + "/Best_nio_new_" + which
     path2 = main_folder + "/Best_fcnn_" + which
     path3 = main_folder + "/Best_don_" + which
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm2 = pd.read_csv(path2 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm3 = pd.read_csv(path3 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm2 = (
+        pd.read_csv(
+            path2 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm3 = (
+        pd.read_csv(
+            path3 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
     model1 = torch.load(path1 + "/model.pkl", map_location=torch.device(device))
     model1 = model1.eval()
@@ -164,33 +287,109 @@ if which == "eit":
     model3 = torch.load(path3 + "/model.pkl", map_location=torch.device(device))
     model3 = model3.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device="cpu", which="testing", mod="nio_new", noise=noise)
-    test_dataset_2 = MyDataset2(norm=norm2, inputs_bool=True, device="cpu", which="testing", mod="fcnn", noise=noise)
-    test_dataset_3 = MyDataset2(norm=norm3, inputs_bool=True, device="cpu", which="testing", mod="don", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
+    test_dataset_2 = MyDataset2(
+        norm=norm2,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="fcnn",
+        noise=noise,
+    )
+    test_dataset_3 = MyDataset2(
+        norm=norm3,
+        inputs_bool=True,
+        device="cpu",
+        which="testing",
+        mod="don",
+        noise=noise,
+    )
 
-if "helm" in  which:
+if "helm" in which:
     path1 = main_folder + "/Best_nio_new_helm"
-    if which=="helm_stab":
+    if which == "helm_stab":
         path1 = main_folder + "/Best_nio_new_helm_stab"
     path2 = main_folder + "/Best_fcnn_helm"
     path3 = main_folder + "/Best_don_helm"
 
-    norm1 = pd.read_csv(path1 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm2 = pd.read_csv(path2 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
-    norm3 = pd.read_csv(path3 + "/training_properties.txt", header=None, sep=",", index_col=0).transpose().reset_index().drop("index", 1)["norm"][0]
+    norm1 = (
+        pd.read_csv(
+            path1 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm2 = (
+        pd.read_csv(
+            path2 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
+    norm3 = (
+        pd.read_csv(
+            path3 + "/training_properties.txt",
+            header=None,
+            sep=",",
+            index_col=0,
+        )
+        .transpose()
+        .reset_index()
+        .drop("index", 1)["norm"][0]
+    )
 
-    model1 = torch.load(path1 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+    model1 = torch.load(
+        path1 + "/model.pkl", map_location=torch.device('cpu')
+    ).cpu()
     model1 = model1.eval()
 
-    model2 = torch.load(path2 + "/model.pkl", map_location=torch.device('cpu')).cpu()
+    model2 = torch.load(
+        path2 + "/model.pkl", map_location=torch.device('cpu')
+    ).cpu()
     model2 = model2.eval()
 
     model3 = torch.load(path3 + "/model.pkl", map_location=torch.device(device))
     model3 = model3.eval()
 
-    test_dataset = MyDataset1(norm=norm1, inputs_bool=True, device=device, which="testing", mod="nio_new", noise=noise)
-    test_dataset_2 = MyDataset2(norm=norm2, inputs_bool=True, device=device, which="testing", mod="fcnn", noise=noise)
-    test_dataset_3 = MyDataset3(norm=norm3, inputs_bool=True, device=device, which="testing", mod="don", noise=noise)
+    test_dataset = MyDataset1(
+        norm=norm1,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        mod="nio_new",
+        noise=noise,
+    )
+    test_dataset_2 = MyDataset2(
+        norm=norm2,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        mod="fcnn",
+        noise=noise,
+    )
+    test_dataset_3 = MyDataset3(
+        norm=norm3,
+        inputs_bool=True,
+        device=device,
+        which="testing",
+        mod="don",
+        noise=noise,
+    )
 
 print("########################################################")
 print("NIO params")
@@ -207,9 +406,15 @@ model3 = model3.to(device)
 
 model1.device = "cpu"
 
-testing_set = DataLoader(test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
-testing_set_2 = DataLoader(test_dataset_2, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
-testing_set_3 = DataLoader(test_dataset_3, batch_size=b, shuffle=False, num_workers=0, pin_memory=True)
+testing_set = DataLoader(
+    test_dataset, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
+testing_set_2 = DataLoader(
+    test_dataset_2, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
+testing_set_3 = DataLoader(
+    test_dataset_3, batch_size=b, shuffle=False, num_workers=0, pin_memory=True
+)
 if which == "curve" or which == "style":
     grid = test_dataset.get_grid(1, 70).squeeze(0)
     print(grid.shape)
@@ -225,8 +430,8 @@ errs_vec_2 = np.zeros((n, 3))
 errs_vec_3 = np.zeros((n, 3))
 
 running_relative_test_mse = 0.0
-running_relative_test_mse_2 = 0.
-running_relative_test_mse_3 = 0.
+running_relative_test_mse_2 = 0.0
+running_relative_test_mse_3 = 0.0
 min_model = test_dataset.min_model
 max_model = test_dataset.max_model
 
@@ -237,7 +442,11 @@ if m != "false":
 # idx_sorted = idx#[np.argsort(idx)]
 
 with torch.no_grad():
-    for step, ((input_batch, output_batch), (input_batch_2, _), (input_batch_3, _)) in enumerate(zip(testing_set, testing_set_2, testing_set_3)):
+    for step, (
+        (input_batch, output_batch),
+        (input_batch_2, _),
+        (input_batch_3, _),
+    ) in enumerate(zip(testing_set, testing_set_2, testing_set_3)):
         input_batch = input_batch.to(device)
         output_batch = output_batch.to(device)
 
@@ -261,8 +470,12 @@ with torch.no_grad():
                 input_batch_2 = input_batch_2[:, :, :, idx_sorted]
                 input_batch_3 = input_batch_3[:, :, :, idx_sorted]
             # input_batch = torch.nn.functional.interpolate(input_batch, size=shape, mode="nearest")
-            input_batch_2 = torch.nn.functional.interpolate(input_batch_2, size=shape, mode="nearest")
-            input_batch_3 = torch.nn.functional.interpolate(input_batch_3, size=shape, mode="nearest")
+            input_batch_2 = torch.nn.functional.interpolate(
+                input_batch_2, size=shape, mode="nearest"
+            )
+            input_batch_3 = torch.nn.functional.interpolate(
+                input_batch_3, size=shape, mode="nearest"
+            )
 
         input_batch_2 = input_batch_2.to(device)
 
@@ -295,17 +508,31 @@ with torch.no_grad():
                 my_loss = torch.nn.L1Loss()
             else:
                 raise ValueError("Choose p = 1 or p=2")
-            loss_test = my_loss(pred_test_1, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test = my_loss(pred_test_1, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test = loss_test.item() ** (1 / p) * 100
-            loss_test_2 = my_loss(pred_test_2, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test_2 = my_loss(pred_test_2, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test_2 = loss_test_2.item() ** (1 / p) * 100
-            loss_test_3 = my_loss(pred_test_3, output_batch) / my_loss(torch.zeros_like(output_batch), output_batch)
+            loss_test_3 = my_loss(pred_test_3, output_batch) / my_loss(
+                torch.zeros_like(output_batch), output_batch
+            )
             err_test_3 = loss_test_3.item() ** (1 / p) * 100
 
             if p == 1:
-                running_relative_test_mse = running_relative_test_mse * step / (step + 1) + err_test / (step + 1)
-                running_relative_test_mse_2 = running_relative_test_mse_2 * step / (step + 1) + err_test_2 / (step + 1)
-                running_relative_test_mse_3 = running_relative_test_mse_3 * step / (step + 1) + err_test_3 / (step + 1)
+                running_relative_test_mse = running_relative_test_mse * step / (
+                    step + 1
+                ) + err_test / (step + 1)
+                running_relative_test_mse_2 = (
+                    running_relative_test_mse_2 * step / (step + 1)
+                    + err_test_2 / (step + 1)
+                )
+                running_relative_test_mse_3 = (
+                    running_relative_test_mse_3 * step / (step + 1)
+                    + err_test_3 / (step + 1)
+                )
 
             errs_vec[step, p - 1] = err_test
             errs_vec_2[step, p - 1] = err_test_2
@@ -318,24 +545,64 @@ with torch.no_grad():
         inp_vec[step, :, :, :] = input_batch_3  # .reshape(1,4,68,20)
 
         if step % 1 == 0:
-            print("Batch: ", step, running_relative_test_mse, running_relative_test_mse_2, running_relative_test_mse_3)
+            print(
+                "Batch: ",
+                step,
+                running_relative_test_mse,
+                running_relative_test_mse_2,
+                running_relative_test_mse_3,
+            )
         if step >= n - 1:
             break
 
 save_path = main_folder
 if not plot:
-    with open(save_path + '/sum_errors_complete_' + str(noise) + '_' + str(m) + "_" + str(which) + '.txt', 'w') as file:
+    with open(
+        save_path
+        + '/sum_errors_complete_'
+        + str(noise)
+        + '_'
+        + str(m)
+        + "_"
+        + str(which)
+        + '.txt',
+        'w',
+    ) as file:
         file.write("Median L1 NIO:" + str(np.median(errs_vec[:, 0])) + "\n")
         file.write("Median L1 FCNN:" + str(np.median(errs_vec_2[:, 0])) + "\n")
         file.write("Median L1 DON:" + str(np.median(errs_vec_3[:, 0])) + "\n")
 
-        file.write("25 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.25)) + "\n")
-        file.write("25 Quantile L1 FCNN:" + str(np.quantile(errs_vec_2[:, 0], 0.25)) + "\n")
-        file.write("25 Quantile L1 DON:" + str(np.quantile(errs_vec_3[:, 0], 0.25)) + "\n")
+        file.write(
+            "25 Quantile L1 NIO:"
+            + str(np.quantile(errs_vec[:, 0], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L1 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 0], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L1 DON:"
+            + str(np.quantile(errs_vec_3[:, 0], 0.25))
+            + "\n"
+        )
 
-        file.write("75 Quantile L1 NIO:" + str(np.quantile(errs_vec[:, 0], 0.75)) + "\n")
-        file.write("75 Quantile L1 FCNN:" + str(np.quantile(errs_vec_2[:, 0], 0.75)) + "\n")
-        file.write("75 Quantile L1 DON:" + str(np.quantile(errs_vec_3[:, 0], 0.75)) + "\n")
+        file.write(
+            "75 Quantile L1 NIO:"
+            + str(np.quantile(errs_vec[:, 0], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L1 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 0], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L1 DON:"
+            + str(np.quantile(errs_vec_3[:, 0], 0.75))
+            + "\n"
+        )
 
         file.write("Std L1 NIO:" + str(np.std(errs_vec[:, 0])) + "\n")
         file.write("Std L1 FCNN:" + str(np.std(errs_vec_2[:, 0])) + "\n")
@@ -349,13 +616,37 @@ if not plot:
         file.write("Median L2 FCNN:" + str(np.median(errs_vec_2[:, 1])) + "\n")
         file.write("Median L2 DON:" + str(np.median(errs_vec_3[:, 1])) + "\n")
 
-        file.write("25 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.25)) + "\n")
-        file.write("25 Quantile L2 FCNN:" + str(np.quantile(errs_vec_2[:, 1], 0.25)) + "\n")
-        file.write("25 Quantile L2 DON:" + str(np.quantile(errs_vec_3[:, 1], 0.25)) + "\n")
+        file.write(
+            "25 Quantile L2 NIO:"
+            + str(np.quantile(errs_vec[:, 1], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L2 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 1], 0.25))
+            + "\n"
+        )
+        file.write(
+            "25 Quantile L2 DON:"
+            + str(np.quantile(errs_vec_3[:, 1], 0.25))
+            + "\n"
+        )
 
-        file.write("75 Quantile L2 NIO:" + str(np.quantile(errs_vec[:, 1], 0.75)) + "\n")
-        file.write("75 Quantile L2 FCNN:" + str(np.quantile(errs_vec_2[:, 1], 0.75)) + "\n")
-        file.write("75 Quantile L2 DON:" + str(np.quantile(errs_vec_3[:, 1], 0.75)) + "\n")
+        file.write(
+            "75 Quantile L2 NIO:"
+            + str(np.quantile(errs_vec[:, 1], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L2 FCNN:"
+            + str(np.quantile(errs_vec_2[:, 1], 0.75))
+            + "\n"
+        )
+        file.write(
+            "75 Quantile L2 DON:"
+            + str(np.quantile(errs_vec_3[:, 1], 0.75))
+            + "\n"
+        )
 
         file.write("Std L2 NIO:" + str(np.std(errs_vec[:, 1])) + "\n")
         file.write("Std L2 FCNN:" + str(np.std(errs_vec_2[:, 1])) + "\n")
@@ -374,9 +665,9 @@ else:
     inp_vec_sorted = inp_vec[idx_sorted]
     print(inp_vec_sorted.shape)
     deeponet = model1.deeponet
-    nx = (grid.shape[0])
-    ny = (grid.shape[1])
-    dim = (grid.shape[2])
+    nx = grid.shape[0]
+    ny = grid.shape[1]
+    dim = grid.shape[2]
     grid_deeponet = grid.reshape(-1, dim)
     # %%
     p = 1
@@ -385,8 +676,12 @@ else:
     elif which == "sin":
         vmax = None
 
-    pw_errs_1 = torch.tensor((abs(out_vec - pred_vec_1) / abs(out_vec))).squeeze(1)
-    pw_errs_2 = torch.tensor((abs(out_vec - pred_vec_2) / abs(out_vec))).squeeze(1)
+    pw_errs_1 = torch.tensor(
+        (abs(out_vec - pred_vec_1) / abs(out_vec))
+    ).squeeze(1)
+    pw_errs_2 = torch.tensor(
+        (abs(out_vec - pred_vec_2) / abs(out_vec))
+    ).squeeze(1)
 
     max_err = max(torch.max(pw_errs_1), torch.max(pw_errs_2)).item()
     min_err = min(torch.min(pw_errs_1), torch.min(pw_errs_2)).item()
@@ -411,31 +706,89 @@ else:
             inp_deep = torch.tensor(inp_vec[i, :, :, :]).type(torch.float32)
             inp_deep = inp_deep.permute(3, 0, 1, 2).unsqueeze(0)
             out_deep = deeponet(inp_deep, grid_deeponet)
-            out_deep = out_deep.reshape(out_deep.shape[0], out_deep.shape[1], nx, ny)[0]
+            out_deep = out_deep.reshape(
+                out_deep.shape[0], out_deep.shape[1], nx, ny
+            )[0]
             inp_deep = inp_deep[0].reshape(20, -1)
             plt.figure()
 
             rows = 4
             columns = 5
 
-            fig1, axes1 = plt.subplots(rows, columns, figsize=(columns * 3, rows * 3))
-            fig2, axes2 = plt.subplots(rows, columns, figsize=(columns * 3, rows * 3))
+            fig1, axes1 = plt.subplots(
+                rows, columns, figsize=(columns * 3, rows * 3)
+            )
+            fig2, axes2 = plt.subplots(
+                rows, columns, figsize=(columns * 3, rows * 3)
+            )
 
             for index in range(out_deep.shape[0]):
                 q = index // 5
                 mod = index % 5
-                axes1[q, mod].plot(np.arange(0, inp_deep.shape[1]), inp_deep[index].detach())
-                axes2[q, mod].contourf(grid[:, :, 0], grid[:, :, 1], out_deep[index].detach(), cmap="jet", levels=200)
-            fig1.savefig(folder + "/Input" + str(i) + "_" + which + "_" + str(noise) + ".png", dpi=200, bbox_inches='tight')
-            fig2.savefig(folder + "/DONetOut" + str(i) + "_" + which + "_" + str(noise) + ".png", dpi=200, bbox_inches='tight')
+                axes1[q, mod].plot(
+                    np.arange(0, inp_deep.shape[1]), inp_deep[index].detach()
+                )
+                axes2[q, mod].contourf(
+                    grid[:, :, 0],
+                    grid[:, :, 1],
+                    out_deep[index].detach(),
+                    cmap="jet",
+                    levels=200,
+                )
+            fig1.savefig(
+                folder
+                + "/Input"
+                + str(i)
+                + "_"
+                + which
+                + "_"
+                + str(noise)
+                + ".png",
+                dpi=200,
+                bbox_inches='tight',
+            )
+            fig2.savefig(
+                folder
+                + "/DONetOut"
+                + str(i)
+                + "_"
+                + which
+                + "_"
+                + str(noise)
+                + ".png",
+                dpi=200,
+                bbox_inches='tight',
+            )
         out_deep_R = torch.mean(out_deep, 0)
         plt.figure()
-        plt.contourf(grid[:, :, 0], grid[:, :, 1], out_deep_R.detach(), cmap="jet", levels=200)
-        plt.savefig(folder + "/OutR" + str(i) + "_" + which + "_" + str(noise) + ".png", dpi=200, bbox_inches='tight')
+        plt.contourf(
+            grid[:, :, 0],
+            grid[:, :, 1],
+            out_deep_R.detach(),
+            cmap="jet",
+            levels=200,
+        )
+        plt.savefig(
+            folder + "/OutR" + str(i) + "_" + which + "_" + str(noise) + ".png",
+            dpi=200,
+            bbox_inches='tight',
+        )
         vmax = torch.max(labels_i)
         vmin = torch.min(labels_i)
-        err_1 = ((torch.mean(torch.abs(labels_i - pred_test_i_1) ** p) / torch.mean(torch.abs(labels_i) ** p)) ** (1 / p)).item() * 100
-        err_2 = ((torch.mean(torch.abs(labels_i - pred_test_i_2) ** p) / torch.mean(torch.abs(labels_i) ** p)) ** (1 / p)).item() * 100
+        err_1 = (
+            (
+                torch.mean(torch.abs(labels_i - pred_test_i_1) ** p)
+                / torch.mean(torch.abs(labels_i) ** p)
+            )
+            ** (1 / p)
+        ).item() * 100
+        err_2 = (
+            (
+                torch.mean(torch.abs(labels_i - pred_test_i_2) ** p)
+                / torch.mean(torch.abs(labels_i) ** p)
+            )
+            ** (1 / p)
+        ).item() * 100
         err_1 = round(err_1, 1)
         err_2 = round(err_2, 1)
         if which != "eit":
@@ -449,13 +802,49 @@ else:
             axes[1].grid(True, which="both", ls=":")
             axes[2].grid(True, which="both", ls=":")
 
-            im2 = axes[0].contourf(grid[:, :, 0], grid[:, :, 1], labels_i.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
-            im3 = axes[1].contourf(grid[:, :, 0], grid[:, :, 1], pred_test_i_1.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
-            im4 = axes[2].contourf(grid[:, :, 0], grid[:, :, 1], pred_test_i_2.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
+            im2 = axes[0].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                labels_i.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
+            im3 = axes[1].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                pred_test_i_1.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
+            im4 = axes[2].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                pred_test_i_2.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
 
-            axes[0].set(xlabel=r'$x$', ylabel=r'$y$', title="Exact Coefficient " + r'$a(x,y)$')
-            axes[1].set(xlabel=r'$x$', ylabel=r'$y$', title="NIO Predicted Coefficient " + r'$a^*(x,y)$')
-            axes[2].set(xlabel=r'$x$', ylabel=r'$y$', title="FCNN Predicted Coefficient " + r'$a^*(x,y)$')
+            axes[0].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="Exact Coefficient " + r'$a(x,y)$',
+            )
+            axes[1].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="NIO Predicted Coefficient " + r'$a^*(x,y)$',
+            )
+            axes[2].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="FCNN Predicted Coefficient " + r'$a^*(x,y)$',
+            )
             cax, kw = mpl.colorbar.make_axes([ax for ax in axes.flat])
             plt.colorbar(im3, cax=cax, **kw)
 
@@ -464,28 +853,74 @@ else:
                 axes[1].invert_yaxis()
                 axes[2].invert_yaxis()
 
-            plt.savefig(folder + "/Sample" + str(i) + "_" + which + ".png", dpi=200, bbox_inches='tight')
+            plt.savefig(
+                folder + "/Sample" + str(i) + "_" + which + ".png",
+                dpi=200,
+                bbox_inches='tight',
+            )
         else:
-            fig, ax = plt.subplots(1, 3, figsize=(30, 8), subplot_kw=dict(projection='polar'))
+            fig, ax = plt.subplots(
+                1, 3, figsize=(30, 8), subplot_kw=dict(projection='polar')
+            )
             ax[0].grid(False)
             ax[1].grid(False)
             ax[2].grid(False)
-            ax[0].contourf(grid[:, :, 0], grid[:, :, 1], labels_i.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
+            ax[0].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                labels_i.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
             ax[0].set_yticklabels([])
             ax[0].set_theta_zero_location("W")
 
-            ax[1].contourf(grid[:, :, 0], grid[:, :, 1], pred_test_i_1.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
+            ax[1].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                pred_test_i_1.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
             ax[1].set_yticklabels([])
             ax[1].set_theta_zero_location("W")
 
-            im3 = ax[2].contourf(grid[:, :, 0], grid[:, :, 1], pred_test_i_2.detach(), levels=200, cmap="inferno", vmin=vmin, vmax=vmax)
+            im3 = ax[2].contourf(
+                grid[:, :, 0],
+                grid[:, :, 1],
+                pred_test_i_2.detach(),
+                levels=200,
+                cmap="inferno",
+                vmin=vmin,
+                vmax=vmax,
+            )
             ax[2].set_yticklabels([])
             ax[2].set_theta_zero_location("W")
 
-            ax[0].set(xlabel=r'$x$', ylabel=r'$y$', title="Exact Coefficient " + r'$a(x,y)$')
-            ax[1].set(xlabel=r'$x$', ylabel=r'$y$', title="NIO Predicted Coefficient " + r'$a^*(x,y)$')
-            ax[2].set(xlabel=r'$x$', ylabel=r'$y$', title="FCNN Predicted Coefficient " + r'$a^*(x,y)$')
+            ax[0].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="Exact Coefficient " + r'$a(x,y)$',
+            )
+            ax[1].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="NIO Predicted Coefficient " + r'$a^*(x,y)$',
+            )
+            ax[2].set(
+                xlabel=r'$x$',
+                ylabel=r'$y$',
+                title="FCNN Predicted Coefficient " + r'$a^*(x,y)$',
+            )
             cax, kw = mpl.colorbar.make_axes([a for a in ax.flat])
             plt.colorbar(im3, cax=cax, **kw)
 
-            plt.savefig(folder + "/Sample" + str(i) + "_" + which + ".png", dpi=200, bbox_inches='tight')
+            plt.savefig(
+                folder + "/Sample" + str(i) + "_" + which + ".png",
+                dpi=200,
+                bbox_inches='tight',
+            )

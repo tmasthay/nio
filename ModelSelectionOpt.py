@@ -9,18 +9,22 @@ np.random.seed(3545)
 random = True
 cluster = "true"
 sbatch = True
-GPU = "None"  # GPU="GeForceGTX1080"  # GPU = "GeForceGTX1080Ti"  # GPU = "TeslaV100_SXM2_32GB"
+GPU = (  # GPU="GeForceGTX1080"  # GPU = "GeForceGTX1080Ti"  # GPU = "TeslaV100_SXM2_32GB"
+    "None"
+)
 
 cpus = 1
 
 folder_name = "ModelSelectionOptL2"
 
-network_architecture = {"n_hidden_layers": [2, 4, 8, 12, 20],
-                        "neurons": [16, 20, 50, 100, 200, 500],
-                        "act_string": ["relu", "tanh", "leaky_relu"],
-                        "dropout_rate": [0],
-                        "lr": [0.01, 0.1],
-                        "retrain": np.random.randint(0, 1000, 10)}
+network_architecture = {
+    "n_hidden_layers": [2, 4, 8, 12, 20],
+    "neurons": [16, 20, 50, 100, 200, 500],
+    "act_string": ["relu", "tanh", "leaky_relu"],
+    "dropout_rate": [0],
+    "lr": [0.01, 0.1],
+    "retrain": np.random.randint(0, 1000, 10),
+}
 
 ndic = {**network_architecture}
 
@@ -45,21 +49,33 @@ for setup in settings:
         "act_string": setup[2],
         "dropout_rate": float(setup[3]),
         "lr": float(setup[4]),
-        "retrain": int(setup[5])
+        "retrain": int(setup[5]),
     }
 
     arguments = list()
     arguments.append(20)
     arguments.append(folder_path)
-    if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
+    if (
+        sys.platform == "linux"
+        or sys.platform == "linux2"
+        or sys.platform == "darwin"
+    ):
         arguments.append("\\\"" + str(net_arch) + "\\\"")
 
     else:
         arguments.append(str(net_arch).replace("\'", "\""))
 
-    if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
+    if (
+        sys.platform == "linux"
+        or sys.platform == "linux2"
+        or sys.platform == "darwin"
+    ):
         if cluster == "true":
-            string_to_exec = "sbatch --time=24:00:00 -n " + str(cpus) + " -G 1 --mem-per-cpu=16384 --wrap=\" python3 ConstOpt.py "
+            string_to_exec = (
+                "sbatch --time=24:00:00 -n "
+                + str(cpus)
+                + " -G 1 --mem-per-cpu=16384 --wrap=\" python3 ConstOpt.py "
+            )
         else:
             string_to_exec = "python3 ContOpt.py "
         for arg in arguments:
