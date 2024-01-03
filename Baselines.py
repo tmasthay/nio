@@ -647,9 +647,10 @@ class EncoderHelm2(nn.Module):
         self.print_bool = print_bool
 
     def forward(self, x):
-        batch_size = x.shape[0]
-        size_fun = x.shape[1]
-        x = x.view(batch_size * size_fun, x.shape[2], x.shape[3], x.shape[4])
+        batch_size, size_fun, *remaining_args = x.shape
+        if len(remaining_args) == 2:
+            remaining_args.insert(0, 1)
+        x = x.view(batch_size * size_fun, *remaining_args)
         # x = x.permute(0, 3, 1, 2)
         # Encoder Part
         if self.print_bool:

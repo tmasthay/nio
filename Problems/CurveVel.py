@@ -4,22 +4,30 @@ import torch
 from torch.utils.data import Dataset
 
 
+def get_dataset_sizes(name):
+    total_length = 30000
+    true_length = 100
+    train_percent, val_percent = 0.7, 0.2
+    test_percent = 1 - train_percent - val_percent
+    train_length = int(true_length * train_percent)
+    val_length = int(true_length * val_percent)
+    test_length = true_length - train_length - val_length
+    if name == 'training':
+        return train_length, 0
+    elif name == 'validation':
+        return val_length, train_length
+    elif name == 'testing':
+        return test_length, train_length + val_length
+    else:
+        raise ValueError(f'Unknown dataset name {name}')
+
+
 class MyDataset(Dataset):
     def __init__(self, norm, inputs_bool, device, which, noise=0, mod="nio"):
         self.file_data = "data/CurveVelData.h5"
         self.noise = noise
-        if which == "training":
-            self.length = 22000 - 1
-            self.start = 0
-            self.which = which
-        elif which == "validation":
-            self.length = 2000
-            self.start = 22000 - 1
-            self.which = which
-        else:
-            self.length = 6000
-            self.start = 22000 - 1 + 2000
-            self.which = which
+        self.which = which
+        self.length, self.start = get_dataset_sizes(which)
         self.reader = h5py.File(self.file_data, 'r')
         self.mean_inp = torch.from_numpy(
             self.reader['mean_inp_fun'][:, :]

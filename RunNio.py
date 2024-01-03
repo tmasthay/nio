@@ -335,7 +335,7 @@ else:
         errors = pd.read_csv(
             folder + "/errors.txt", header=None, sep=":", index_col=0
         )
-        errors = errors.transpose().reset_index().drop("index", 1)
+        errors = errors.transpose().reset_index().drop("index", axis=1)
         start_epoch = int(errors["Current Epoch"].values[0]) + 1
         best_model_testing_error = float(errors["Best Testing Error"].values[0])
         best_model = copy.deepcopy(model)
@@ -520,7 +520,6 @@ for epoch in range(start_epoch, epochs + start_epoch):
         grid = grid.to(device, non_blocking=True)
         optimizer.zero_grad(set_to_none=True)
         for step, (input_batch, output_batch) in enumerate(training_set):
-
             if torch.cuda.is_available():
                 mem = str(round(getGPUs()[0].memoryUtil, 2) * 100) + "%"
             else:

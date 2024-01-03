@@ -286,7 +286,6 @@ class SNOWaveConv2(nn.Module):
         if self.b_scale != 0.0:
             grid_deeponet = self.fourier_features_transform(grid)
         else:
-
             grid_deeponet = grid.reshape(-1, dim)
         x = self.deeponet(x, grid_deeponet)
         x = x.reshape(-1, nx, ny, 1)
@@ -372,7 +371,6 @@ class NIOHelmPermInv(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-
         # x has shape N x L x nb
         if self.training:
             L = np.random.randint(2, x.shape[1])
@@ -384,7 +382,12 @@ class NIOHelmPermInv(nn.Module):
         nx = grid.shape[0]
         ny = grid.shape[1]
 
-        grid_r = grid.view(-1, 2)
+        # try:
+        #     grid_r = grid.view(-1, 2)
+        # except Exception as e:
+        #     input(f'\n{grid.shape}')
+        #     raise e
+        grid_r = grid.reshape(-1, 2)
         x = self.deeponet(x, grid_r)
         # x = self.attention(x)
 
@@ -694,7 +697,6 @@ class NIOWavePerm(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-
         if self.training:
             L = np.random.randint(2, x.shape[3])
             idx = np.random.choice(x.shape[3], L)
@@ -806,7 +808,6 @@ class NIOHelmPermInvAbl(nn.Module):
         self.device = device
 
     def forward(self, x, grid):
-
         # x has shape N x L x nb
         L = x.shape[1]
 
